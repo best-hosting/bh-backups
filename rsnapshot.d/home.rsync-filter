@@ -1,0 +1,5 @@
+- /home/httpd-logs/*
+- /home/*/data/logs/*
+
+. /etc/rsnapshot.d/home-base.rsync-filter
+

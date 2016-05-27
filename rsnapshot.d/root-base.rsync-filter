@@ -36,4 +36,9 @@
 - /var/ossec/logs/*
 - /var/ossec/var/run/*
 - /var/ossec/tmp/*
+- /usr/local/ispmgr/distfiles/*
+- /usr/local/ispmgr/var/.backup/*
+- /usr/local/ispmgr/var/logs/*
+- /usr/local/ispmgr/var/run/*
+- /usr/local/ispmgr/tmp/*
 

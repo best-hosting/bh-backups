@@ -31,17 +31,18 @@ cmd_mysqldump="mysqldump$nl$def_file"
 
 IFS="$nl"
 # Backup each database to separate file
-$cmd_mysql -BNe 'SHOW databases WHERE `database` != "information_schema" AND `database` != "performance_schema";' | while read database
-do
+ds="$($cmd_mysql -BNe 'SHOW databases WHERE `database` != "information_schema" AND `database` != "performance_schema";')"
+for database in $ds; do
 	echo -n "Database: '$database' -> " 1>&2
 	database="$(echo "$database" | sed -e's/[/?*]/_/g')"
 	echo " '$database'" 1>&2
         $cmd_mysqldump --events --force --opt --databases "$database" | gzip -5 > databases/"$database".sql.gz
 done
 
+IFS="$nl"
 # Store user grants and passwords in separate files for convinience
-$cmd_mysql -BNe 'SELECT DISTINCT user FROM mysql.user;' | while read user
-do
+us="$($cmd_mysql -BNe 'SELECT DISTINCT user FROM mysql.user;')"
+for user in $us; do
         $cmd_mysql -BNe "SELECT DISTINCT CONCAT('SHOW GRANTS FOR ''',user,'''@''',host,''';') FROM mysql.user WHERE user = '${user}';" | $cmd_mysql -N | sed 's/\\\\/\\/g;s/$/;/' > users/"$user".grants.sql
 done
 

@@ -6,28 +6,82 @@ nl='
 '
 OIFS="$IFS"
 
-mkdir -p databases users
+# Find unused local port.
+# Args:
+# 1 - port number to start from.
+# 2 - maximum port number.
+find_unused_port()
+{
+    local lport="$1"        # Local port to start search from.
+    local lport_max="$2"    # Maximum socat port number.
+    local port_inc=1        # Increment for port number.
 
+    # FIXME: sanity check numbers..
+    # Find unused local port.
+    while [ $lport -le $lport_max ]; do
+        echo "Trying local port $lport.." 1>&2
+        # It seems, that without '-u' option i can't reuse port immediately. I.e.
+        # unused port, which i'd found here, becomes "already in use", when i'll
+        # try to bind to it later.
+        socat -u TCP-LISTEN:$lport,bind=127.0.0.1 OPEN:/dev/null 2>/dev/null &
+        sleep 1
+        nc -z 127.0.0.1 $lport || true
+        if wait "$!"; then
+            break
+        fi
+        lport=$(($lport + $port_inc))
+    done
+    if [ $lport -gt $lport_max ]; then
+        echo "Error: Can't find unused local port." 1>&2
+        return 1
+    fi
+    echo "$lport"
+}
+
+readonly name="$(basename "$0" .sh)"
 # Set timestamp far in the past, so if i don't reach the end of script, nagios
 # will notice that.
-echo 1 > "$(basename "$0" .sh).timestamp"
+readonly timestamp="$name.timestamp"
+echo 1 > "$timestamp"
 
-def_file=""
+echo "Using SSH hostname '$name'." 1>&2
+readonly ssh_sock="$HOME/.ssh/$name.socket"
+if ssh -S "$ssh_sock" -O check none 2>/dev/null; then
+    echo "SSH tunnel has already opened with socket '$ssh_sock'." 1>&2
+    exit 1
+fi
+
+readonly lport=$(find_unused_port 6446 6476)
+readonly laddr=127.0.0.1
+readonly raddr=127.0.0.1
+echo "Forward port $lport" 1>&2
+ssh -M -S "$ssh_sock" -fnNT -L $laddr:$lport:$raddr:3306 $name
+if ! ssh -S "$ssh_sock" -O check none 2>/dev/null; then
+    echo "Failed to open SSH tunnel with socket '$ssh_sock'." 1>&2
+    exit 1
+fi
+
+trap "ssh -S \"$ssh_sock\" -O exit none" INT QUIT EXIT 
+
+args_mysql="-h${nl}${laddr}${nl}-P$nl$lport"
 # mysql and mysqldump place options from "extra" default file before options
 # from standard files. Thus, making overwriting options from "extra" default
-# file not possible. Moreover, when '--defaults-file' is specified, "extra"
+# file is not possible. Moreover, when '--defaults-file' is specified, "extra"
 # won't be read at all.
-f="$(dirname "$0")/$(basename "$0" .sh).cnf"
+f="$(dirname "$0")/$name.cnf"
 if [ -f "$f" ]; then
-    def_file="${def_file:+$def_file$nl}--defaults-file=$f"
+    args_mysql="--defaults-file=${f}${args_mysql:+$nl$args_mysql}"
 else
-    f="$(dirname "$0")/$(basename "$0" .sh).extra.cnf"
+    f="$(dirname "$0")/$name.extra.cnf"
     if [ -f "$f" ]; then
-	def_file="${def_file:+$def_file$nl}--defaults-extra-file=$f"
+        args_mysql="--defaults-extra-file=${f}${args_mysql:+$nl$args_mysql}"
     fi
 fi
-cmd_mysql="mysql$nl$def_file"
-cmd_mysqldump="mysqldump$nl$def_file"
+readonly args_mysql
+readonly cmd_mysql="mysql$nl$args_mysql"
+readonly cmd_mysqldump="mysqldump$nl$args_mysql"
+
+mkdir -p databases users
 
 IFS="$nl"
 # Backup each database to separate file
@@ -47,5 +101,5 @@ for user in $us; do
 done
 
 # Now i may update timestamp to current time.
-echo "$(date +%s)" > "$(basename "$0" .sh).timestamp"
+echo "$(date +%s)" > "$timestamp"
 

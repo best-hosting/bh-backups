@@ -1,4 +1,4 @@
-# Sample / filter.
+# BH / filter.
 
 . /etc/rsnapshot.d/lib/ossec.rsync-filter
 . /etc/rsnapshot.d/lib/ispmgr.rsync-filter

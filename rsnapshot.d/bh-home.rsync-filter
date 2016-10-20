@@ -1,3 +1,9 @@
+# BH filter for user's data.
+
+# Ignore web logs.
+- /home/httpd-logs/*
+- /home/*/data/logs/*
+
 - /var/www/httpd-logs/*
 - /var/www/*/data/logs/*
 

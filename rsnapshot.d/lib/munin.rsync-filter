@@ -1,0 +1,4 @@
++ /var/lib/munin/*
+- /var/lib/munin/cgi-tmp/*
+
++ /var/lib/munin/**

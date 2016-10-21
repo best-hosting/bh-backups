@@ -1,8 +1,3 @@
-+ /var/log/apt/
-# Not needed, when root filter excludes '- /var/log/*', but required, when
-# root filter excludes '- /var/log/**'.
-+ /var/log/apt/*
-+ /var/log/unattended-upgrades/
-+ /var/log/unattended-upgrades/*
+. /etc/rsnapshot.d/lib/apt-logs.rsync-filter
 
-. /etc/rsnapshot.d/root-base.rsync-filter
+. /etc/rsnapshot.d/lib/root-base.rsync-filter

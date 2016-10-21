@@ -1,5 +1,0 @@
-- /var/www/httpd-logs/*
-- /var/www/*/data/logs/*
-
-. /etc/rsnapshot.d/home-base.rsync-filter
-

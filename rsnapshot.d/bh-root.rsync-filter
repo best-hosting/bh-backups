@@ -1,6 +1,6 @@
 # Sample / filter.
 
-. /etc/rsnapshot.d/ossec.rsync-filter
-. /etc/rsnapshot.d/ispmgr.rsync-filter
+. /etc/rsnapshot.d/lib/ossec.rsync-filter
+. /etc/rsnapshot.d/lib/ispmgr.rsync-filter
 
-. /etc/rsnapshot.d/root-base.rsync-filter
+. /etc/rsnapshot.d/lib/root-base.rsync-filter

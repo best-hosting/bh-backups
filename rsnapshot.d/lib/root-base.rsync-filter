@@ -30,5 +30,5 @@
 # All munin graph data is here. But save it using other filter, if needed.
 - /var/lib/munin/*
 - /var/lib/mysql/*
-- /var/lib/php5/*
+- /var/lib/php5/sessions/*
 - /var/lib/dhcp/*

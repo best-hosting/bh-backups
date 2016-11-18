@@ -1,0 +1,125 @@
+Restoring from full root backup
+===============================
+
+1. *Prepare new partition*, format it and mount on host system:
+
+        mount /dev/reiji/kvm_srv /mnt/root/ -o loop,offset=16777216
+
+2. *Debootstrap* proper Debian version:
+
+        debootstrap jessie /mnt/root/ http://httpredir.debian.org/debian/
+
+3. *Sync backup* of root with new root with *correct* rsync filter:
+
+        rsync -aH --delete --numeric-ids --filter='. /etc/rsnapshot.d/lib/root-base.rsync-filter' /var/cache/rsnapshot/srv/daily.0/root/ /mnt/root/
+
+    Note:
+
+    - there is `--delete`, but no `--delete-excluded`, and `--filter` is the
+      same as was during backup. This is essential, because with such options
+      *only* fully backed up directories will be synced, but excluded files
+      will be left in place (as they were after `debootstrap`).
+    - I may use filter, excluding more, than was excluded during backup. E.g.
+      if i've backed up logs (like in `save-root.rsync-filter`), i may use
+      filter excluding them (like `root-base.rsync-filter`) during restore,
+      and in that case logs won't be restored and `/var/log` will be left as
+      it was after `debootstrap`.
+
+    *Sync backup* of other backup points too (e.g. /home and /var/www):
+
+        rsync -aH --delete --numeric-ids --filter='. /etc/rsnapshot.d/srv-var_www.rsync-filter' /var/cache/rsnapshot/srv/daily.0/var/www/ /mnt/root/var/www/
+        rsync -aH --delete --numeric-ids --filter='. /etc/rsnapshot.d/srv-home.rsync-filter' /var/cache/rsnapshot/srv/daily.0/home/ /mnt/root/home/
+
+4. *Fix UUIDs* (of /, /boot, etc) in `/etc/fstab`. Usually, write there UUID of
+   new root fs (`blkid`).
+
+5. *Fix network* interface name and/or mac address in
+   `/etc/udev/rules.d/70-persistent-net.rules` and `/etc/network/interfaces`.
+   Usually, just remove udev rules file
+
+        rm /etc/udev/rules.d/70-persistent-net.rules
+
+    and it'll be regenerated with new mac address and interface name `eth0` at
+    next boot.
+
+    * If i want to run restored server with different IP, fix address in
+       `/etc/network/interfaces`, `/etc/hosts`, `/etc/resolv.conf` and others
+       files, like ones in `/etc/nginx`, `/etc/exim4` .
+
+    * If restored and original servers operate on the same L2 network and
+       both are intended to work at the same time, i should not announce mac
+       addresses for IPs used on original server from restored server. For
+       that i need to:
+
+        - block port (at L2 switch), where interface of restored server with
+          original server's addresses are connected to.
+
+        - forbid arp replies for queries about these addresses from other restored
+          server interfaces:
+
+                net.ipv4.conf.all.arp_ignore=1
+                net.ipv4.conf.all.arp_announce=1
+
+        Then i may access restored server through different interface using
+        different IP address, still having original server IP addresses
+        assigned to other (blocked, but in UP state) interface (and, thus,
+        available for binding in applications).
+
+        Though, i still may need to check (and fix) routes, interface MTU
+        (e.g.  if this (different) interface, which now will be used to access
+        restored server, was connected elsewhere in original server (e.g. to
+        internal LAN), it may have MTU 9000, but switch (where this interface
+        is connected now) may have only 100Mbit port.. whatever).
+
+6. *Fix boot* in *chroot* from live-cd:
+
+        grub-install
+        update-grub
+        update-initramfs -k all -u
+
+    if you're restoring virtual machine, do *not* do this from host system, it
+    may not work as expected.
+
+    New server may require different modules to boot: e.g. old server may have
+    used hardware raid, but new uses mdadm raid, then i may need to install
+    `mdadm` in *chroot* and reinstall grub with '--recheck':
+
+        grub-install --recheck ...
+
+    **MAKE SURE**:
+
+        - That lvm2 and mdadm are present in initramfs.
+
+        - That modules required for drives (and, probably, network) are present on
+          initramfs.
+
+7. *Restore particular programs*.
+
+    * Mysql files are not backed up (databases are dumped using `mysqldump`
+       instead), thus for restoring mysql operation i need to reinitialize
+       mysql root directory first
+
+            mysql_install_db --user=mysql --ldata=/var/lib/mysql/
+
+        start mysqld manually
+
+            /usr/sbin/mysqld --skip-grant-tables --skip-networking &
+            mysql -u root
+
+        and reset root password
+
+            flush privileges;
+            SET PASSWORD FOR root@'localhost' = PASSWORD('password');
+
+        Then i may need to restore grants for (at least) `debian-sys-maint`
+        user (otherwise, init.d script `stop` action won't work). And,
+        probably, remove unused `root` users (except for `localhost`).
+
+    * I may need to change ssh host keys. For that just remove existing ones
+      and reconfigure `openssh-server` package:
+
+            rm /etc/ssh/ssh_host_*
+            dpkg-reconfigure openssh-server
+
+Usually even restoration of root backup over running (minimal) system should
+succeed.

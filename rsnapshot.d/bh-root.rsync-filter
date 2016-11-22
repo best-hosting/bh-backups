@@ -1,6 +1,6 @@
 # BH / filter.
 
-. /etc/rsnapshot.d/lib/ossec.rsync-filter
-. /etc/rsnapshot.d/lib/ispmgr.rsync-filter
+. INSTALL_PATH/rsnapshot.d/lib/ossec.rsync-filter
+. INSTALL_PATH/rsnapshot.d/lib/ispmgr.rsync-filter
 
-. /etc/rsnapshot.d/lib/root-base.rsync-filter
+. INSTALL_PATH/rsnapshot.d/lib/root-base.rsync-filter

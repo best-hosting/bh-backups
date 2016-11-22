@@ -7,5 +7,5 @@
 - /var/www/httpd-logs/*
 - /var/www/*/data/logs/*
 
-. /etc/rsnapshot.d/lib/home-base.rsync-filter
+. INSTALL_PATH/rsnapshot.d/lib/home-base.rsync-filter
 

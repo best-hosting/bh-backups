@@ -19,3 +19,5 @@
 + /var/www/httpd-cert/**
 + /var/www/httpd-logs/
 
+# VDS manager data.
+- root/.vdstools/

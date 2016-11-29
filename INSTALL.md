@@ -24,7 +24,13 @@ rsync filters for rsnapshot setup.
 
     or define your own rsync filter, probably, including library filters.
 
-3. Install mysql backup script (see below).
+3. Add an entry to `~/.ssh/config` for connecting to server named `srv`:
+
+        Host srv
+            HostName some-server
+            User root
+
+4. Install mysql backup script `mysql.sh` (see below).
 
 mysql backup script setup.
 --------------------------
@@ -35,44 +41,50 @@ mysql backup script setup.
 
         # cp mysql.sh /usr/local/bin/mysql.sh
 
-2. Create symlink pointing to installed `mysql.sh`, with some name `NAME`
-   (usually, denoting backed up server name):
+2. Create symlink pointing to installed `mysql.sh` for server `srv`:
 
-        # ln -sv /usr/local/bin/mysql.sh /etc/rsnapshot.d/mysql-SERVER.sh
-        `/etc/rsnapshot.d/mysql-SERVER.sh' -> `/usr/local/bin/mysql.sh'
+        # ln -sv /usr/local/bin/mysql.sh /etc/rsnapshot.d/srv-mysql.sh
+        `/etc/rsnapshot.d/srv-mysql.sh' -> `/usr/local/bin/mysql.sh'
 
-3. Create my.cnf style config with login, password, host and other options
-   with *matched* `NAME`:
-    - if i want to create config for using with '--defaults-file' mysql
-      option, name it `NAME.cnf`, e.g.:
+3. Create `my.cnf` style config with login, password, host and other options
+   with *the same* name (except extension) as symlink to `mysql.sh`:
+    - if i want to create config for using with `--defaults-file` option of
+      `mysql` client, i should use `.cnf` extension:
 
-            /etc/rsnapshot.d/mysql-SERVER.cnf
+            /etc/rsnapshot.d/srv-mysql.cnf
 
-    - if i want to create config for using with '--defaults-extra-file' mysql
-      option, name it `NAME.extra.cnf`, e.g.:
+        In that case, `mysql` client won't read any other configs, i.e.
+        `srv-mysql.cnf` will be the only config used.
 
-            /etc/rsnapshot.d/mysql-SERVER.extra.cnf
+    - if i want to create config for using with `--defaults-extra-file` option
+      of `mysql` client, i should use `.extra.cnf` extension:
 
-    If config `NAME.cnf` was found, script won't look for `NAME.extra.cnf` .
-    When `NAME.cnf` is used, this will be the only config, which `mysql` will
-    read (i.e. options from `/root/.my.cnf` won't be used). But when
-    `NAME.extra.cnf` is used, its options will be merged with content of
-    `/root/.my.cnf` (the latter will overwrite the former).
-4. Add an entry in '~/.ssh/config' for connecting to server with *matched*
-   `NAME`:
+            /etc/rsnapshot.d/srv-mysql.extra.cnf
 
-        Host NAME
-            HostName SERVER
+        In that case, content of `srv-mysql.extra.cnf` will be merged with
+        `/root/.my.cnf` (the latter will overwrite the former).
+
+    `mysql.sh` will first check `name.cnf` (where `name` is the name with
+    which it was invoked), and won't look further for `name.extra.cnf`, if
+    found.
+
+4. Add an entry in `~/.ssh/config` for connecting to server `srv-mysql` (note,
+   here is the name with which `mysql.sh` was invoked without `.sh`
+   extension):
+
+        Host srv-mysql
+            HostName some-server
             User root
 
 5. Create user in mysql for backup server. It will connect from `localhost`
-   (through ssh tunnel) and needs following privileges: `SELECT, LOCK TABLES,
+   (through ssh tunnel) and need following privileges: `SELECT, LOCK TABLES,
    SHOW VIEW, EVENT, TRIGGER`. And, if i want to dump mysql users's passwords
    (`IDENTIFIED BY PASSWORD <secret>` in `GRANT`), `SUPER` privilege also
    necessary e.g.:
 
         GRANT SELECT, SUPER, LOCK TABLES, SHOW VIEW, EVENT, TRIGGER ON *.* TO 'backup'@'localhost';
 
-6. Specify backup point with `backup_script` in `rsnapshot.conf`:
+6. Specify backup point with `backup_script` in `rsnapshot.conf` (it's already
+   there, if i have installed config using `install.sh`):
 
-        backup_script   /root/mysql-SERVER.sh   mysql/
+        backup_script   /etc/rsnapshot.d/srv-mysql.sh   mysql/

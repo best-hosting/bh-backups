@@ -9,6 +9,9 @@
 
 + /usr/local/ispmgr/**
 
+# It seems, that ISP 5 installs files here too.
++ /opt/ispsystem/
+
 # Logs and certificates (nginx won't start without them).
 + /home/httpd-cert/
 + /home/httpd-cert/**

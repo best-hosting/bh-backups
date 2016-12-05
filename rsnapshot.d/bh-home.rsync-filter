@@ -4,5 +4,5 @@
 - /httpd-logs/*
 - /*/data/logs/*
 
-. INSTALL_PATH/rsnapshot.d/lib/home-base.rsync-filter
+. rsnapshot.d/lib/home-base.rsync-filter
 

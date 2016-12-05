@@ -1,0 +1,9 @@
+# Haskell.
+*.hi
+*.ho
+.stack-work/
+
+# Shake.
+_shake/
+.shake/
+report.html

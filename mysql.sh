@@ -90,14 +90,20 @@ for database in $ds; do
 	echo -n "Database: '$database' -> " 1>&2
 	database="$(echo "$database" | sed -e's/[/?*]/_/g')"
 	echo " '$database'" 1>&2
-        $cmd_mysqldump --events --force --opt --databases "$database" | gzip -5 > databases/"$database".sql.gz
+        p="databases/${database}.sql"
+        $cmd_mysqldump --events --force --opt --databases "$database" > "$p"
+        gzip --fast < "$p" > "$p".gz
+        rm "$p"
 done
 
 IFS="$nl"
 # Store user grants and passwords in separate files for convinience
 us="$($cmd_mysql -BNe 'SELECT DISTINCT user FROM mysql.user;')"
 for user in $us; do
-        $cmd_mysql -BNe "SELECT DISTINCT CONCAT('SHOW GRANTS FOR ''',user,'''@''',host,''';') FROM mysql.user WHERE user = '${user}';" | $cmd_mysql -N | sed 's/\\\\/\\/g;s/$/;/' > users/"$user".grants.sql
+        p="users/${user}.grants"
+        $cmd_mysql -BNe "SELECT DISTINCT CONCAT('SHOW GRANTS FOR ''',user,'''@''',host,''';') FROM mysql.user WHERE user = '${user}';" > "$p"
+        $cmd_mysql -N < "$p" | sed 's/\\\\/\\/g;s/$/;/' > "$p".sql
+        rm "$p"
 done
 
 # Now i may update timestamp to current time.

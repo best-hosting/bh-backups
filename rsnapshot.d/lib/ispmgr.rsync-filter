@@ -1,0 +1,26 @@
+# ISP Manager filters.
++ /usr/local/ispmgr/
+
+- /usr/local/ispmgr/distfiles/*
+- /usr/local/ispmgr/tmp/*
+- /usr/local/ispmgr/var/.backup/*
+- /usr/local/ispmgr/var/logs/*
+- /usr/local/ispmgr/var/run/*
+
++ /usr/local/ispmgr/**
+
+# It seems, that ISP 5 installs files here too.
++ /opt/ispsystem/
+
+# Logs and certificates (nginx won't start without them).
++ /home/httpd-cert/
++ /home/httpd-cert/**
++ /home/httpd-logs/
+
+# User's directories may be placed in /var/www .
++ /var/www/httpd-cert/
++ /var/www/httpd-cert/**
++ /var/www/httpd-logs/
+
+# VDS manager data.
+- root/.vdstools/

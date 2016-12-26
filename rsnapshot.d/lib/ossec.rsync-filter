@@ -1,0 +1,9 @@
+# OSSEC filters.
++ /var/ossec/
+
+- /var/ossec/logs/*
+- /var/ossec/tmp/*
+- /var/ossec/var/run/*
+- /var/ossec/queue/diff/*
+
++ /var/ossec/**

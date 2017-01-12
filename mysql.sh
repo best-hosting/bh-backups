@@ -56,12 +56,12 @@ readonly laddr=127.0.0.1
 readonly raddr=127.0.0.1
 echo "Forward port $lport" 1>&2
 ssh -M -S "$ssh_sock" -fnNT -L $laddr:$lport:$raddr:3306 $name
-if ! ssh -S "$ssh_sock" -O check none 2>/dev/null; then
+if ! ssh -T -S "$ssh_sock" -O check none; then
     echo "Failed to open SSH tunnel with socket '$ssh_sock'." 1>&2
     exit 1
 fi
 
-trap "ssh -S \"$ssh_sock\" -O exit none" INT QUIT EXIT 
+trap "ssh -T -S \"$ssh_sock\" -O exit none" INT QUIT EXIT
 
 args_mysql="-h${nl}${laddr}${nl}-P$nl$lport"
 # mysql and mysqldump place options from "extra" default file before options

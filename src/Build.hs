@@ -1,3 +1,8 @@
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE PolyKinds                  #-}
+{-# OPTIONS_HADDOCK show-extensions     #-}
 
 import System.Console.GetOpt
 
@@ -7,6 +12,8 @@ import System.Directory.Extra
 
 import Sgf.Development.Shake.RsyncFilter
 import Sgf.Development.Shake.Shell
+import Sgf.Development.Shake.Target
+
 
 -- $constants
 
@@ -15,8 +22,9 @@ srcdir :: FilePath
 srcdir              = "src"
 
 -- | Rsync filter source directory.
-rsyncrscdir :: FilePath
-rsyncrscdir         = "rsnapshot.d"
+rsyncsrcdir :: FilePath
+rsyncsrcdir         = "rsnapshot.d"
+
 
 -- $options
 data Options        = Options
@@ -26,11 +34,12 @@ data Options        = Options
                         }
   deriving (Show)
 defOptions :: Options
-defOptions          = Options
-                        { prefix        = "t"
-                        , bindir        = prefix defOptions </> "bin"
-                        , sysconfdir    = prefix defOptions </> "etc" </> "rsnapshot.d"
-                        }
+defOptions          =
+    Options
+        { prefix        = "t"
+        , bindir        = prefix defOptions </> "bin"
+        , sysconfdir    = prefix defOptions </> "etc" </> "rsnapshot.d"
+        }
 
 opts :: [OptDescr (Either String (Options -> Options))]
 opts                =
@@ -48,23 +57,49 @@ opts                =
             ++ "Default: " ++ sysconfdir defOptions)
     ]
 
--- $main
 
-defTargets :: Options -> [String] -> Rules ()
-defTargets xopts [] = defTargets xopts ["all"]
-defTargets xopts [x]
-  -- Assume existence of other targets. Not checked!
-  | x == "all"      = mapM_ (defTargets xopts . (: [])) ["mysql", "rsync"]
-  | x == "mysql"    = want [bindir xopts </> "mysql" <.> "sh"]
-  | x == "rsync"    = do
-        xs <- liftIO $ listFiles rsyncrscdir
-        let ys  = map (sysconfdir xopts </>)
+-- $targets.
+
+-- | Several special targets.
+data SpecialTarget  = AllT      -- ^ Install all.
+                    | RsyncT    -- ^ Install only rsync filters.
+                    | MysqlT    -- ^ Install only mysql backup script.
+-- | Now 'All' target install rsync filters ('Rsync') and mysql backup script
+-- ('Mysql').
+instance BuildTarget 'AllT where
+    data Target 'AllT       = All Options
+    wantTarget (All op)     = do
+        wantTarget (Rsync op)
+        wantTarget (Mysql op)
+-- | Treat all files in 'rsyncsrcdir' (excluding subdirectories) as rsync
+-- filters to be installed.
+instance BuildTarget 'RsyncT where
+    data Target 'RsyncT = Rsync Options
+    wantTarget (Rsync op)   = do
+        xs <- liftIO $ listFiles rsyncsrcdir
+        let ys  = map (sysconfdir op </>)
                     . filter ((== ".rsync-filter") . takeExtension)
                     . map takeFileName
                     $ xs
-        want ys
-  | otherwise       = want [x]
-defTargets _ xs     = want xs
+        wantTarget (Files ys)
+-- | Install mysql backup script.
+instance BuildTarget 'MysqlT where
+    data Target 'MysqlT     = Mysql Options
+    wantTarget (Mysql op)   = wantTarget $
+                                Files [bindir op </> "mysql" <.> "sh"]
+
+-- | Parse remaining command-line arguments as build targets.
+defTargets :: Options -> [String] -> Rules ()
+defTargets op []    = wantTarget (All op)
+defTargets op [x]
+  | x == "all"      = wantTarget (All op)
+  | x == "rsync"    = wantTarget (Rsync op)
+  | x == "mysql"    = wantTarget (Mysql op)
+  | otherwise       = wantTarget (Files [x])
+defTargets _  xs    = wantTarget (Files xs)
+
+
+-- $main
 
 main :: IO ()
 main    = shakeArgsWith shakeOptions opts $ \fopts args -> return $ Just $ do
@@ -72,5 +107,5 @@ main    = shakeArgsWith shakeOptions opts $ \fopts args -> return $ Just $ do
             defTargets xopts args
 
             shellScript "sh" (bindir xopts) srcdir
-            rsyncFilter "rsync-filter" (sysconfdir xopts) rsyncrscdir
+            rsyncFilter "rsync-filter" (sysconfdir xopts) rsyncsrcdir
 

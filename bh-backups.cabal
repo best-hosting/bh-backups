@@ -20,6 +20,7 @@ library
                         Sgf.Development.Shake.FilePath
                         Sgf.Development.Shake.RsyncFilter
                         Sgf.Development.Shake.Shell
+                        Sgf.Development.Shake.Target
   build-depends:        base
                         , mtl
                         , transformers
@@ -35,6 +36,7 @@ executable build
                         Sgf.Development.Shake.FilePath
                         Sgf.Development.Shake.RsyncFilter
                         Sgf.Development.Shake.Shell
+                        Sgf.Development.Shake.Target
   ghc-options:          -threaded -rtsopts -with-rtsopts=-IO -Wall
   build-depends:          base
                         , mtl

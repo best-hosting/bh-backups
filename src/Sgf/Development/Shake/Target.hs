@@ -21,11 +21,12 @@ import Development.Shake
 -- targets. I need a kind polymorphism for making instances for promoted data
 -- types (they'll have not a '*' kind).
 --
--- Build target has the type 'Target a' (different targets have different
--- types) and its data constructor is defined in class instance. Thus,
--- type-checker will verify, that all used targets have instances defined.
--- E.g. if "build all" target refers to several specific targets and some of
--- them will be removed or renamed, type-checker will notice this.
+-- Build target based on type @a@ has the type @Target a@ (different targets
+-- have different types) and its data constructor is defined in class
+-- instance. Thus, type-checker will verify, that all used targets have
+-- instances defined.  E.g. if target building all refers to several specific
+-- targets and some of them will be removed or renamed, type-checker will
+-- notice this.
 class BuildTarget (a :: t) where
     data Target a   :: *
     wantTarget      :: Target a -> Rules ()

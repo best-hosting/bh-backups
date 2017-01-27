@@ -129,7 +129,22 @@ defTargets _  xs    = wantTarget (Files xs)
 install :: IO ()
 install  = shakeArgsWith shakeOptions opts $ \fopts args -> return $ Just $ do
             let op = foldr (.) id fopts defOptions
-            defTargets op args
+            --defTargets op args
+            if null args
+              then want ["all"]
+              else want args
+
+            "all"   ~> need ["rsync", "mysql"]
+
+            "rsync" ~> do
+                xs <- liftIO $ listFiles rsyncsrcdir
+                let ys  = map (sysconfdir op </>)
+                            . filter ((== ".rsync-filter") . takeExtension)
+                            . map takeFileName
+                            $ xs
+                need ys
+
+            "mysql" ~> need [bindir op </> "mysql" <.> "sh"]
 
             shellScript "sh" (bindir op) srcdir
             rsyncFilter "rsync-filter" (sysconfdir op) rsyncsrcdir

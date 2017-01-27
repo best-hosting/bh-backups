@@ -1,6 +1,7 @@
 
 -- |
 -- Module:      Sgf.Development.Shake.FilePath
+-- Description: File name manipulation helper functions.
 -- Maintainer:  sgf.dma@gmail.com
 
 module Sgf.Development.Shake.FilePath

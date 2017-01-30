@@ -16,6 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:       src
   exposed-modules:      Sgf.Control.Lens
+                        Sgf.Text
                         Sgf.Text.RsyncFilter
                         Sgf.Development.Shake.FilePath
                         Sgf.Development.Shake.RsyncFilter
@@ -35,6 +36,7 @@ executable build
   hs-source-dirs:       src
   main-is:              Build.hs
   other-modules:        Sgf.Control.Lens
+                        Sgf.Text
                         Sgf.Text.RsyncFilter
                         Sgf.Development.Shake.FilePath
                         Sgf.Development.Shake.RsyncFilter

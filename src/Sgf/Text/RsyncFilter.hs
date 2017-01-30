@@ -30,7 +30,6 @@ module Sgf.Text.RsyncFilter
 
       -- * Parse.
       -- $parse
-    , Serialize (..)
     )
   where
 
@@ -40,6 +39,7 @@ import Data.Typeable
 import Control.Applicative
 
 import Sgf.Control.Lens
+import Sgf.Text
 
 
 -- $types
@@ -97,12 +97,6 @@ rsyncLineL          = rsyncLineL' . lineL
 
 
 -- $parse
-
--- | Essentially this is just another 'Read' / 'Show' class, because i want
--- to keep default 'Read' / 'Show' too.
-class Serialize a where
-    fromString  :: String -> Maybe a
-    toString    :: a -> String
 
 instance Serialize (RsyncFilter 'LineT) where
     fromString          = Just . Line

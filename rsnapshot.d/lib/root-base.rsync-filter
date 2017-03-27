@@ -32,3 +32,8 @@
 - /var/lib/mysql/*
 - /var/lib/php5/sessions/*
 - /var/lib/dhcp/*
+
+# For CentOS 6.
+- /var/spool/exim/*/*
+- /var/lib/php/session/*
+

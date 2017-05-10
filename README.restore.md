@@ -30,8 +30,8 @@ Restoring from full root backup
         rsync -aH --delete --numeric-ids --filter='. /etc/rsnapshot.d/srv-var_www.rsync-filter' /var/cache/rsnapshot/srv/daily.0/var/www/ /mnt/root/var/www/
         rsync -aH --delete --numeric-ids --filter='. /etc/rsnapshot.d/srv-home.rsync-filter' /var/cache/rsnapshot/srv/daily.0/home/ /mnt/root/home/
 
-4. *Fix UUIDs* (of /, /boot, etc) in `/etc/fstab`. Usually, write there UUID of
-   new root fs (`blkid`).
+4. *Fix UUIDs* (of /, /boot, etc) in `/etc/fstab` and `/boot/grub/grub.cfg`.
+   Usually, write there UUID of new root fs (`blkid`).
 
 5. *Fix network* interface name and/or mac address in
    `/etc/udev/rules.d/70-persistent-net.rules` and `/etc/network/interfaces`.

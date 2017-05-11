@@ -19,6 +19,8 @@
 - /var/cache/*/*
 # Some programs (like exim4 and bind) won't start without log directories.
 + /var/log/**/
+# `acct` won't work without its file.
++ /var/log/account/pacct
 - /var/log/**
 - /var/mail/*
 - /var/opt/*

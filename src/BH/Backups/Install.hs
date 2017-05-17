@@ -37,12 +37,15 @@ rsyncsrcdir         = "rsnapshot.d"
 
 data Options =
     Options
-        { -- | Prefix path used to construct all others (except 'sysconfdir').
-        prefix        :: FilePath
+        { -- | Prefix path used to construct all others pathes.
+          _prefix        :: FilePath
+        -- | Prefix path used to construct '_bindir'. If it's empty, '_prefix'
+        -- will be used.
+        , _execPrefix :: FilePath
         -- | Directory for installing binary files.
-        , bindir        :: FilePath
+        , _bindir        :: FilePath
         -- | Directory for installing config files.
-        , sysconfdir    :: FilePath
+        , _sysconfdir    :: FilePath
         }
   deriving (Show)
 
@@ -50,26 +53,47 @@ data Options =
 defOptions :: Options
 defOptions          =
     Options
-        { prefix        = "t"
-        , bindir        = prefix defOptions </> "bin"
-        , sysconfdir    = prefix defOptions </> "etc" </> "rsnapshot.d"
+        { _prefix       = "t"
+        , _execPrefix   = ""
+        , _bindir       = "bin"
+        , _sysconfdir   = "etc" </> "rsnapshot.d"
         }
+
+-- | Construct full config installation path by applying '_sysconfdir' to
+-- '_prefix'.
+sysconfdir :: Options -> FilePath
+sysconfdir Options {_prefix = p, _sysconfdir = s}
+                    = p </> s
+
+-- | Construct full binary installation path by applying '_bindir' to
+-- '_execPrefix', if not empty, or '_prefix' otherwise.
+bindir :: Options -> FilePath
+bindir Options {_prefix = p, _execPrefix = ep, _bindir = b}
+  | null ep         = p  </> b
+  | otherwise       = ep </> b
 
 -- | 'OptDescr' for 'shakeArgsWith' (and 'getOpt').
 opts :: [OptDescr (Either String (Options -> Options))]
 opts                =
     [ Option [] ["prefix"]
-        (ReqArg (\x -> Right (\op -> op{prefix = x})) "PATH")
-        ("Prefix path used to construct all others (except 'sysconfdir')."
-            ++ "Default: " ++ prefix defOptions)
+        (ReqArg (\x -> Right (\op -> op{_prefix = x})) "PATH")
+        ("Prefix path used to construct all other pathes."
+            ++ " Default: " ++ _prefix defOptions)
+    , Option [] ["exec-prefix"]
+        (ReqArg (\x -> Right (\op -> op{_execPrefix = x})) "PATH")
+        ("Prefix path used to construct 'bindir` path."
+            ++ " If not specified, 'prefix' will be used."
+            ++ " Default: " ++ _execPrefix defOptions)
     , Option [] ["bindir"]
-        (ReqArg (\x -> Right (\op -> op{bindir = x})) "PATH")
-        ("Directory for installing binary files."
-            ++ "Default: " ++ bindir defOptions)
+        (ReqArg (\x -> Right (\op -> op{_bindir = x})) "PATH")
+        ("Trailing part of binary files installation path."
+            ++ " '--prefix' or '--exec-prefix' are prepended to this path."
+            ++ " Default: " ++ bindir defOptions)
     , Option [] ["sysconfdir"]
-        (ReqArg (\x -> Right (\op -> op{sysconfdir = x})) "PATH")
-        ("Directory for installing config files."
-            ++ "Default: " ++ sysconfdir defOptions)
+        (ReqArg (\x -> Right (\op -> op{_sysconfdir = x})) "PATH")
+        ("Trailing part of config files installation path."
+            ++ " '--prefix' is prepended to this path."
+            ++ " Default: " ++ sysconfdir defOptions)
     ]
 
 

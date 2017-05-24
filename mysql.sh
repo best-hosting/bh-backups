@@ -91,7 +91,13 @@ for database in $ds; do
 	database="$(echo "$database" | sed -e's/[/?*]/_/g')"
 	echo " '$database'" 1>&2
         p="databases/${database}.sql"
-        $cmd_mysqldump --events --force --opt --databases "$database" > "$p"
+        # I should not use `--opt` option here, because:
+        # 1. It's enabled by default.
+        # 2. If it's specified here, i can't override part of its values in
+        #    config file, because config is read first.
+        # 3. I can't specify config file after `--opt` either, because `mysql`
+        #    only allows `--defaults-file` option to be the first option.
+        $cmd_mysqldump --events --force --databases "$database" > "$p"
         gzip --fast < "$p" > "$p".gz
         rm "$p"
 done

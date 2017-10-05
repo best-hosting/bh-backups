@@ -40,3 +40,5 @@
 - /var/spool/exim/*/*
 - /var/lib/php/session/*
 
+# Libvirt.
+- /var/lib/libvirt/images/*

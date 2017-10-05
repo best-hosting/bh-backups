@@ -1,6 +1,7 @@
 # Base / filters.
 
 - .git/
+- .stack/
 
 - /dev/*
 - /proc/*

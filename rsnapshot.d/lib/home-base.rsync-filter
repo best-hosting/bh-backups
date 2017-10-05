@@ -1,5 +1,6 @@
 - mod-tmp/*
 - bin-tmp/*
+- .stack/
 # Should we filter this out?
 # - tmp/*
 

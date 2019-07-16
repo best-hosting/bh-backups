@@ -1,0 +1,4 @@
+---
+# vars file for bh-backups
+rsync_filters_dir: "{{ install_path + '/rsnapshot.d' }}"
+rsync_filters_libdir: "{{ install_path + '/rsnapshot.d/lib' }}"

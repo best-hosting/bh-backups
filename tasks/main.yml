@@ -1,0 +1,41 @@
+---
+# tasks file for bh-backups
+
+- block:
+  - name: backups | Install rsnapshot.conf
+    template:
+      src:  "rsnapshot.conf"
+      dest: "{{ install_path + '/rsnapshot.' + inventory_hostname + '.conf' }}"
+      backup: yes
+
+  - name: backups | Ensure rsync filters directories exists
+    file:
+      dest:   "{{ item }}"
+      owner:  root
+      group:  root
+      mode:   0755
+      state:  directory
+    loop:
+      - "{{ rsync_filters_dir }}"
+      - "{{ rsync_filters_libdir }}"
+  - name: backups | Copy rsync filters library
+    copy:
+      src:    "{{ item }}"
+      dest:   "{{ rsync_filters_libdir }}"
+      force:  yes
+      backup: yes
+    with_fileglob:
+      - "rsnapshot.d/lib/*"
+
+  - name: backups | Copy default rsync filters
+    template:
+      src:    "{{ item }}"
+      dest:   "{{ rsync_filters_dir }}"
+      force:  yes
+      backup: yes
+    with_fileglob:
+      - "templates/*.rsync-filter"
+
+  delegate_to: "{{ backup_server }}"
+  when: inventory_hostname in groups['backups']
+

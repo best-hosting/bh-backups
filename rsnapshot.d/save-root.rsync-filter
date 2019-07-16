@@ -1,3 +1,0 @@
-. INSTALL_PATH/rsnapshot.d/lib/apt-logs.rsync-filter
-
-. INSTALL_PATH/rsnapshot.d/lib/root-base.rsync-filter

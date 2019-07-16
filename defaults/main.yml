@@ -1,0 +1,3 @@
+---
+# defaults file for bh-backups
+install_path: '/etc'

@@ -1,0 +1,3 @@
+. {{ rsync_filters_libdir }}/apt-logs.rsync-filter
+
+. {{ rsync_filters_libdir }}/root-base.rsync-filter

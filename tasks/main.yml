@@ -38,9 +38,11 @@
 
   - name: backups | Generate per-host filters
     copy:
-      content: "{{ bh_root_rsync_filter }}"
-      dest:   "{{ rsync_filters_dir + '/huy.filter' }}"
+      content: "{{ item.rsync_filter }}"
+      dest:   "{{ rsync_filters_dir + '/' + inventory_hostname + '-' + item.name + '.rsync-filter' }}"
       force:  yes
+      backup: yes
+    loop: "{{ backups }}"
 
   delegate_to: "{{ backup_server }}"
   when: inventory_hostname in groups['backups']

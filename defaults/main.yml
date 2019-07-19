@@ -3,19 +3,32 @@
 install_path: '/etc'
 
 bh_root_rsync_filter: |
+  # BH / filter.
 
   . {{ rsync_filters_libdir }}/ossec.rsync-filter
   . {{ rsync_filters_libdir }}/ispmgr.rsync-filter
 
   . {{ rsync_filters_libdir }}/root-base.rsync-filter
 
+bh_home_rsync_filter: |
+  # BH filter for user's data.
+
+  # Ignore web logs.
+  - /httpd-logs/*
+  - /*/data/logs/*
+
+  . {{ rsync_filters_libdir }}/home-base.rsync-filter
+
 backups:
   - name: 'root'
     src:  '/'
     dst:  'root'
+    rsync_filter: "{{ bh_root_rsync_filter }}"
   - name: 'var_www'
     src:  '/var/www'
     dst:  'var/www'
+    rsync_filter: "{{ bh_home_rsync_filter }}"
   - name: 'home'
     src:  '/home'
     dst:  'home'
+    rsync_filter: "{{ bh_home_rsync_filter }}"

@@ -32,3 +32,9 @@ r_backups:
     src:  '/home'
     dst:  'home'
     rsync_filter: "{{ bh_home_rsync_filter }}"
+
+r_backup_scripts:
+  - name: 'mysql'
+    dst:  'mysql'
+    script: 'files/mysql.sh'
+

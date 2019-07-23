@@ -36,15 +36,36 @@
     with_fileglob:
       - "templates/*.rsync-filter"
 
-  - name: backups | Generate per-host filters
-    template:
-      src:    'templates/per_backup-rsync_filter'
-      dest:   "{{ rsync_filters_dir + '/' + inventory_hostname + '-' + r_backup.name + '.rsync-filter' }}"
-      force:  yes
-      backup: yes
-    loop: "{{ backups }}"
-    loop_control:
-      loop_var: r_backup
+  - name: backups | Define per-host rsync filters list
+    set_fact:
+      backup_data_templates: >
+        {{  [ { 'src' : 'templates/per_backup-rsync_filter'
+              , 'dest': rsync_filters_dir + '/'
+                        + inventory_hostname + '-' + item.name + '.rsync-filter'
+              , 'r_name': item.name
+              }
+            ] + backup_data_templates }}
+    loop: "{{ r_backups }}"
+
+  - name: Huy
+    debug:
+      var: backup_data_templates
+
+  - name: Set r_backups2
+    set_fact:
+      r_backups2: "{{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}"
+
+  - name: Huy2
+    debug:
+      var: r_backups2
+
+  - name: backups | Create data files
+    include_role:
+      name: sgf-restore
+    vars:
+      backup_dir: "{{ backup_root_dir + '/bh-backups' }}"
+      default_data_templates: "{{ backup_data_templates }}"
+      default_file_dest: 'huy'
 
   delegate_to: "{{ backup_server }}"
   when: inventory_hostname in groups['backups']

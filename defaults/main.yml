@@ -19,7 +19,7 @@ bh_home_rsync_filter: |
 
   . {{ rsync_filters_libdir }}/home-base.rsync-filter
 
-backups:
+r_backups:
   - name: 'root'
     src:  '/'
     dst:  'root'

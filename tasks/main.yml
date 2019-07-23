@@ -51,9 +51,10 @@
     debug:
       var: backup_data_templates
 
-  - name: Set r_backups2
+  - name: backups | Define rsync filters dictionary
     set_fact:
-      r_backups2: "{{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}"
+      r_backup_filters: >
+        {{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}
 
   - name: Huy2
     debug:

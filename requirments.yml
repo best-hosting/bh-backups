@@ -1,0 +1,3 @@
+- src: git@github.com:sgf-dma/sgf-restore.git
+  version: master
+  scm: git

@@ -37,12 +37,14 @@
       - "templates/*.rsync-filter"
 
   - name: backups | Generate per-host filters
-    copy:
-      content: "{{ item.rsync_filter }}"
-      dest:   "{{ rsync_filters_dir + '/' + inventory_hostname + '-' + item.name + '.rsync-filter' }}"
+    template:
+      src:    'templates/per_backup-rsync_filter'
+      dest:   "{{ rsync_filters_dir + '/' + inventory_hostname + '-' + r_backup.name + '.rsync-filter' }}"
       force:  yes
       backup: yes
     loop: "{{ backups }}"
+    loop_control:
+      loop_var: r_backup
 
   delegate_to: "{{ backup_server }}"
   when: inventory_hostname in groups['backups']

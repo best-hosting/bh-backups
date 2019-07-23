@@ -1,3 +1,21 @@
 ---
 # defaults file for bh-backups
 install_path: '/etc'
+
+bh_root_rsync_filter: |
+
+  . {{ rsync_filters_libdir }}/ossec.rsync-filter
+  . {{ rsync_filters_libdir }}/ispmgr.rsync-filter
+
+  . {{ rsync_filters_libdir }}/root-base.rsync-filter
+
+backups:
+  - name: 'root'
+    src:  '/'
+    dst:  'root'
+  - name: 'var_www'
+    src:  '/var/www'
+    dst:  'var/www'
+  - name: 'home'
+    src:  '/home'
+    dst:  'home'

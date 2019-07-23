@@ -36,6 +36,12 @@
     with_fileglob:
       - "templates/*.rsync-filter"
 
+  - name: backups | Generate per-host filters
+    copy:
+      content: "{{ bh_root_rsync_filter }}"
+      dest:   "{{ rsync_filters_dir + '/huy.filter' }}"
+      force:  yes
+
   delegate_to: "{{ backup_server }}"
   when: inventory_hostname in groups['backups']
 

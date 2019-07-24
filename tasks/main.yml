@@ -38,28 +38,29 @@
 
   - name: Define per-host rsync filters list
     set_fact:
-      backup_data_templates: >
-        {{  [ { 'src' : 'templates/per_backup-rsync_filter'
+      r_data_templates: >
+        {{  [ { 'src' : role_path + '/templates/per_backup-rsync_filter'
               , 'dest': rsync_filters_dir + '/'
                         + inventory_hostname + '-' + item.name + '.rsync-filter'
               , 'r_name': item.name
               }
-            ] + backup_data_templates }}
+            ] + r_data_templates }}
     loop: "{{ r_backups }}"
 
   - name: Define per-host rsync scripts list
     set_fact:
-      backup_data_files: >
-        {{  [ { 'src' : item.script
+      r_data_files: >
+        {{  [ { 'src' : role_path + '/' + item.script
               , 'dest': rsync_filters_dir + '/'
-                        + inventory_hostname + '-' + item.name | basename
+                        + inventory_hostname + '-' + item.script | basename
+              , 'mode': '0755'
               }
-            ] + backup_data_files }}
+            ] + r_data_files }}
     loop: "{{ r_backup_scripts }}"
 
   - name: Huy
     debug:
-      var: backup_data_templates
+      var: r_data_files
 
   - name: backups | Define rsync filters dictionary
     set_fact:
@@ -71,8 +72,8 @@
       name: sgf-restore
     vars:
       backup_dir: "{{ backup_root_dir + '/bh-backups' }}"
-      default_data_files: "{{ backup_data_files }}"
-      default_data_templates: "{{ backup_data_templates }}"
+      default_data_files: "{{ r_data_files }}"
+      default_data_templates: "{{ r_data_templates }}"
       default_file_dest: 'huy'
 
   delegate_to: "{{ backup_server }}"

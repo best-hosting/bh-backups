@@ -16,7 +16,11 @@
       dest: "{{ install_path + '/rsnapshot.' + inventory_hostname + '.conf' }}"
       backup: yes
 
-  - name: backups | Ensure rsync filters directories exists
+  tags:
+    - rsnapshot_config
+
+- block:
+  - name: Ensure rsync filters directories exists
     file:
       dest:   "{{ item }}"
       owner:  root
@@ -26,7 +30,8 @@
     loop:
       - "{{ rsync_filters_dir }}"
       - "{{ rsync_filters_libdir }}"
-  - name: backups | Copy rsync filters library
+
+  - name: Copy rsync filters library
     copy:
       src:    "{{ item }}"
       dest:   "{{ rsync_filters_libdir }}"
@@ -35,16 +40,12 @@
     with_fileglob:
       - "rsnapshot.d/lib/*"
 
-  - name: backups | Copy default rsync filters
-    template:
-      src:    "{{ item }}"
-      dest:   "{{ rsync_filters_dir }}"
-      force:  yes
-      backup: yes
-    with_fileglob:
-      - "templates/*.rsync-filter"
+  - name: Define dictionary used in rsync filter templates
+    set_fact:
+      r_backup_filters: >
+        {{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}
 
-  - name: Define per-host rsync filters list
+  - name: Define rsync filter templates list
     set_fact:
       r_data_templates: >
         {{  [ { 'src' : role_path + '/templates/per_backup-rsync_filter'
@@ -55,7 +56,8 @@
             ] + r_data_templates }}
     loop: "{{ r_backups }}"
 
-  - name: Define per-host rsync scripts list
+- block:
+  - name: Define backup scripts list
     set_fact:
       r_data_files: >
         {{  [ { 'src' : role_path + '/' + item.script
@@ -65,15 +67,10 @@
               }
             ] + r_data_files }}
     loop: "{{ r_backup_scripts }}"
+  tags:
+    - rsnapshot_filters
 
-  - name: Huy
-    debug:
-      var: r_data_files
-
-  - name: backups | Define rsync filters dictionary
-    set_fact:
-      r_backup_filters: >
-        {{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}
+- block:
 
   - name: backups | Create data files
     include_role:

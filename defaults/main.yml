@@ -38,3 +38,4 @@ r_backup_scripts:
     dst:  'mysql'
     script: 'files/mysql.sh'
 
+r_snapshot_root: '/var/cache/rsnapshot'

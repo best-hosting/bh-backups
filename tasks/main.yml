@@ -2,6 +2,14 @@
 # tasks file for bh-backups
 
 - block:
+  - name: Create snapshot root
+    file:
+      mode: '0700'
+      owner: 'root'
+      group: 'root'
+      path:  "{{ r_snapshot_root + '/' + inventory_hostname }}"
+      state: directory
+
   - name: backups | Install rsnapshot.conf
     template:
       src:  "rsnapshot.conf"

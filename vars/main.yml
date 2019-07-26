@@ -13,3 +13,5 @@ r_ssh_hosts:
 
 ssh_host_keys_db_dir: "{{ playbook_dir + '/ssh_host_keys/' + inventory_hostname }}"
 ssh_host_keys: []
+
+ssh_root_pubkey_db_dir: "{{ playbook_dir + '/ssh_root_keys/' + inventory_hostname }}"

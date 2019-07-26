@@ -15,4 +15,6 @@
       import_tasks: tasks/backup_server.yml
 
   when: inventory_hostname in groups['backup_servers']
+  tags:
+    - backup_server
 

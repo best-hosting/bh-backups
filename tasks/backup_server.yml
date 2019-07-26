@@ -1,0 +1,21 @@
+---
+
+- block:
+    - name: Create local directory for backup server root keys
+      file:
+        path: "{{ ssh_root_pubkey_db_dir }}"
+        state: directory
+      delegate_to: localhost
+
+      # FIXME: Requires ansible 2.8.
+      #    - name: Generate backup server ssh keypair
+      #      openssh_keypair:
+      #        path:   '/root/.ssh/id_rsa'
+      #        state:  present
+
+    - name: Obtain backup server root ssh pubkey
+      synchronize:
+        mode: pull
+        src:  '/root/.ssh/id_rsa.pub'
+        dest: "{{ ssh_root_pubkey_db_dir }}"
+

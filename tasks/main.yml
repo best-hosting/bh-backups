@@ -11,6 +11,7 @@
                 }
               ] + r_data_templates }}
 
+    # FIXME: backup script destination path generation is hardcoded here.
     - name: Add backup scripts to file list
       set_fact:
         r_data_files: >
@@ -97,3 +98,36 @@
 
   delegate_to: "{{ backup_server }}"
   when: inventory_hostname in groups['backups']
+
+- block:
+    # FIXME: ssh hostname expected by backup script is hardcoded here.
+    - name: Define ssh hosts
+      set_fact:
+        r_ssh_hosts: |
+          Host {{ inventory_hostname }}
+            HostName {{ ansible_host }}
+            User root
+          {% for h in r_backup_scripts %}
+          Host {{ h.ssh_host
+                    | default( inventory_hostname + '-'
+                                + h.script | basename | splitext | first
+                             ) }}
+            HostName {{ h.ssh_hostname | default(ansible_host) }}
+            User root
+          {% endfor %}
+
+    - name: Add ssh hosts
+      blockinfile:
+        block: "{{ r_ssh_hosts }}"
+        state:  present
+        owner:  'root'
+        group:  'root'
+        mode:   '0600'
+        path:   '/root/.ssh/config'
+        create: yes
+
+  delegate_to: "{{ backup_server }}"
+  when: inventory_hostname in groups['backups']
+  tags:
+    - 'rsnapshot_ssh'
+

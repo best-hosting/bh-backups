@@ -14,7 +14,7 @@
     - name: Add backup scripts to file list
       set_fact:
         r_data_files: >
-          {{  [ { 'src' : role_path + '/' + item.script
+          {{  [ { 'src' : item.script
                 , 'dest': rsync_filters_dir + '/'
                           + inventory_hostname + '-' + item.script | basename
                 , 'mode': '0755'

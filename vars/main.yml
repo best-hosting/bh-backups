@@ -11,4 +11,5 @@ r_ssh_hosts:
   - ssh_host: "{{ inventory_hostname }}"
     ssh_hostname: "{{ ansible_host }}"
 
-ssh_host_keys_db: "{{ 'ssh_host_keys/' + inventory_hostname }}"
+ssh_host_keys_db_dir: "{{ playbook_dir + '/ssh_host_keys/' + inventory_hostname }}"
+ssh_host_keys: []

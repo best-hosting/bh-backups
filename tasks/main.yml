@@ -138,7 +138,7 @@
 
 - block:
     - name: Create host keys dir locally
-      local_action: file path={{ ssh_host_keys_db }} state=directory
+      local_action: file path={{ ssh_host_keys_db_dir }} state=directory
 
     - name: Get a list of ssh host public keys
       find:
@@ -146,7 +146,7 @@
         patterns: '^ssh_host_[^/]+_key\.pub$'
         use_regex:  'yes'
         file_type:  'file'
-      register: ssh_host_keys
+      register: ssh_host_keys_found
 
     - name: Obtain ssh host key
       synchronize:
@@ -154,9 +154,48 @@
         recursive: yes
         delete: yes
         src: "{{ item.path }}"
-        dest: "{{ ssh_host_keys_db }}"
-      loop: "{{ ssh_host_keys.files }}"
+        dest: "{{ ssh_host_keys_db_dir }}"
+      loop: "{{ ssh_host_keys_found.files }}"
 
   tags:
+    - 'rsnapshot_ssh'
     - 'ssh_host_keys_db'
+
+- block:
+    - name: Get a list of ssh host public keys stored in local db
+      find:
+        paths: "{{ ssh_host_keys_db_dir }}"
+        patterns: '^ssh_host_[^/]+_key\.pub$'
+        use_regex:  'yes'
+        file_type:  'file'
+      register: ssh_host_keys_local_db
+
+    - name: Parse ssh host public keys
+      set_fact:
+        ssh_host_keys: >
+          {{  [ dict( ['keytype', 'key', 'host']
+                        | zip(lookup('file', item.path).split(' '))
+                    )
+              ] + ssh_host_keys }}
+      loop: "{{ ssh_host_keys_local_db.files }}"
+
+    - name: Huy
+      debug:
+        var: ssh_host_keys
+
+  delegate_to: localhost
+  tags:
+    - 'rsnapshot_ssh'
+
+- block:
+    - name: Add server to backups server's known hosst
+      known_hosts:
+        name: "{{ ansible_host }}"
+        key:  "{{ ansible_host + ' ' + item.keytype + ' ' + item.key }}"
+        hash_host: yes
+      loop: "{{ ssh_host_keys }}"
+
+  delegate_to: "{{ backup_server }}"
+  tags:
+    - 'rsnapshot_ssh'
 

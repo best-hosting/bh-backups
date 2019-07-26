@@ -1,0 +1,102 @@
+---
+
+- block:
+    # FIXME: ssh hostname expected by backup script is hardcoded here.
+    - name: Define ssh hostnames
+      set_fact:
+        r_ssh_hosts: >
+          {{  [{ 'ssh_host': item.ssh_host
+                              | default(inventory_hostname + '-'
+                                        + item.script | basename | splitext | first)
+              , 'ssh_hostname': item.ssh_hostname | default(ansible_host)
+              }] + r_ssh_hosts
+          }}
+      loop: "{{ r_backup_scripts }}"
+
+    - name: Define ssh config content
+      set_fact:
+        r_ssh_hosts: |
+          {% for h in r_ssh_hosts %}
+            Host {{ h.ssh_host }}
+              HostName {{ h.ssh_hostname }}
+              User root
+          {% endfor %}
+
+    - name: Add ssh hosts
+      blockinfile:
+        block: "{{ r_ssh_hosts }}"
+        state:  present
+        owner:  'root'
+        group:  'root'
+        mode:   '0600'
+        path:   '/root/.ssh/config'
+        create: yes
+
+  delegate_to: "{{ backup_server }}"
+  when: inventory_hostname in groups['backups']
+  tags:
+    - 'rsnapshot_ssh'
+
+- block:
+    - name: Create host keys dir locally
+      local_action: file path={{ ssh_host_keys_db_dir }} state=directory
+
+    - name: Get a list of ssh host public keys
+      find:
+        paths: '/etc/ssh'
+        patterns: '^ssh_host_[^/]+_key\.pub$'
+        use_regex:  'yes'
+        file_type:  'file'
+      register: ssh_host_keys_found
+
+    - name: Obtain ssh host key
+      synchronize:
+        mode: pull
+        recursive: yes
+        delete: yes
+        src: "{{ item.path }}"
+        dest: "{{ ssh_host_keys_db_dir }}"
+      loop: "{{ ssh_host_keys_found.files }}"
+
+  tags:
+    - 'rsnapshot_ssh'
+    - 'ssh_host_keys_db'
+
+- block:
+    - name: Get a list of ssh host public keys stored in local db
+      find:
+        paths: "{{ ssh_host_keys_db_dir }}"
+        patterns: '^ssh_host_[^/]+_key\.pub$'
+        use_regex:  'yes'
+        file_type:  'file'
+      register: ssh_host_keys_local_db
+
+    - name: Parse ssh host public keys
+      set_fact:
+        ssh_host_keys: >
+          {{  [ dict( ['keytype', 'key', 'host']
+                        | zip(lookup('file', item.path).split(' '))
+                    )
+              ] + ssh_host_keys }}
+      loop: "{{ ssh_host_keys_local_db.files }}"
+
+    - name: Huy
+      debug:
+        var: ssh_host_keys
+
+  delegate_to: localhost
+  tags:
+    - 'rsnapshot_ssh'
+
+- block:
+    - name: Add server to backups server's known hosst
+      known_hosts:
+        name: "{{ ansible_host }}"
+        key:  "{{ ansible_host + ' ' + item.keytype + ' ' + item.key }}"
+        hash_host: yes
+      loop: "{{ ssh_host_keys }}"
+
+  delegate_to: "{{ backup_server }}"
+  tags:
+    - 'rsnapshot_ssh'
+

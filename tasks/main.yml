@@ -101,19 +101,24 @@
 
 - block:
     # FIXME: ssh hostname expected by backup script is hardcoded here.
-    - name: Define ssh hosts
+    - name: Define ssh hostnames
+      set_fact:
+        r_ssh_hosts: >
+          {{  [{ 'ssh_host': item.ssh_host
+                              | default(inventory_hostname + '-'
+                                        + item.script | basename | splitext | first)
+              , 'ssh_hostname': item.ssh_hostname | default(ansible_host)
+              }] + r_ssh_hosts
+          }}
+      loop: "{{ r_backup_scripts }}"
+
+    - name: Define ssh config content
       set_fact:
         r_ssh_hosts: |
-          Host {{ inventory_hostname }}
-            HostName {{ ansible_host }}
-            User root
-          {% for h in r_backup_scripts %}
-          Host {{ h.ssh_host
-                    | default( inventory_hostname + '-'
-                                + h.script | basename | splitext | first
-                             ) }}
-            HostName {{ h.ssh_hostname | default(ansible_host) }}
-            User root
+          {% for h in r_ssh_hosts %}
+            Host {{ h.ssh_host }}
+              HostName {{ h.ssh_hostname }}
+              User root
           {% endfor %}
 
     - name: Add ssh hosts
@@ -130,4 +135,28 @@
   when: inventory_hostname in groups['backups']
   tags:
     - 'rsnapshot_ssh'
+
+- block:
+    - name: Create host keys dir locally
+      local_action: file path={{ ssh_host_keys_db }} state=directory
+
+    - name: Get a list of ssh host public keys
+      find:
+        paths: '/etc/ssh'
+        patterns: '^ssh_host_[^/]+_key\.pub$'
+        use_regex:  'yes'
+        file_type:  'file'
+      register: ssh_host_keys
+
+    - name: Obtain ssh host key
+      synchronize:
+        mode: pull
+        recursive: yes
+        delete: yes
+        src: "{{ item.path }}"
+        dest: "{{ ssh_host_keys_db }}"
+      loop: "{{ ssh_host_keys.files }}"
+
+  tags:
+    - 'ssh_host_keys_db'
 

@@ -3,7 +3,7 @@
 - block:
     - name: Create local directory for backup server root keys
       file:
-        path: "{{ ssh_root_pubkey_db_dir }}"
+        path: "{{ ssh_root_pubkeys_db_dir + '/' + inventory_hostname }}"
         state: directory
       delegate_to: localhost
 
@@ -17,5 +17,5 @@
       synchronize:
         mode: pull
         src:  '/root/.ssh/id_rsa.pub'
-        dest: "{{ ssh_root_pubkey_db_dir }}"
+        dest: "{{ ssh_root_pubkeys_db_dir + '/' + inventory_hostname }}"
 

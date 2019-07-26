@@ -100,3 +100,23 @@
   tags:
     - 'rsnapshot_ssh'
 
+- block:
+    - name: Get a list of backup server ssh root public keys
+      find:
+        paths:      "{{ ssh_root_pubkeys_db_dir + '/' + backup_server }}"
+        patterns:   '^id_rsa.pub$'
+        use_regex:  'yes'
+        file_type:  'file'
+      register: ssh_root_pubkeys_found
+      delegate_to: localhost
+
+    - name: Add backup server key
+      authorized_key:
+        user:   'root'
+        state:  'present'
+        key:    "{{ lookup('file', item.path) }}"
+      loop: "{{ ssh_root_pubkeys_found.files }}"
+
+  tags:
+    - 'rsnapshot_ssh'
+    - huy

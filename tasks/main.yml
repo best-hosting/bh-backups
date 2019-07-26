@@ -2,85 +2,98 @@
 # tasks file for bh-backups
 
 - block:
-  - name: Create snapshot root
-    file:
-      mode: '0700'
-      owner: 'root'
-      group: 'root'
-      path:  "{{ r_snapshot_root + '/' + inventory_hostname }}"
-      state: directory
+    - name: Add rsnapshot.conf to templates list
+      set_fact:
+        r_data_templates: >
+          {{  [ { 'src' : role_path + '/templates/rsnapshot.conf'
+                , 'dest': install_path + '/rsnapshot.' + inventory_hostname + '.conf'
+                , 'mode': '0755'
+                }
+              ] + r_data_templates }}
 
-  - name: backups | Install rsnapshot.conf
-    template:
-      src:  "rsnapshot.conf"
-      dest: "{{ install_path + '/rsnapshot.' + inventory_hostname + '.conf' }}"
-      backup: yes
+    - name: Add backup scripts to file list
+      set_fact:
+        r_data_files: >
+          {{  [ { 'src' : role_path + '/' + item.script
+                , 'dest': rsync_filters_dir + '/'
+                          + inventory_hostname + '-' + item.script | basename
+                , 'mode': '0755'
+                }
+              ] + r_data_files }}
+      loop: "{{ r_backup_scripts }}"
 
   tags:
-    - rsnapshot_config
+    - 'rsnapshot_config'
 
 - block:
-  - name: Ensure rsync filters directories exists
-    file:
-      dest:   "{{ item }}"
-      owner:  root
-      group:  root
-      mode:   0755
-      state:  directory
-    loop:
-      - "{{ rsync_filters_dir }}"
-      - "{{ rsync_filters_libdir }}"
+    - name: Define dictionary used in rsync filter templates
+      set_fact:
+        r_backup_filters: >
+          {{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}
 
-  - name: Copy rsync filters library
-    copy:
-      src:    "{{ item }}"
-      dest:   "{{ rsync_filters_libdir }}"
-      force:  yes
-      backup: yes
-    with_fileglob:
-      - "rsnapshot.d/lib/*"
+    - name: Add rsync filter files to templates list
+      set_fact:
+        r_data_templates: >
+          {{  [ { 'src' : role_path + '/templates/per_backup-rsync_filter'
+                , 'dest': rsync_filters_dir + '/'
+                          + inventory_hostname + '-' + item.name + '.rsync-filter'
+                , 'r_name': item.name
+                }
+              ] + r_data_templates }}
+      loop: "{{ r_backups }}"
 
-  - name: Define dictionary used in rsync filter templates
-    set_fact:
-      r_backup_filters: >
-        {{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}
-
-  - name: Define rsync filter templates list
-    set_fact:
-      r_data_templates: >
-        {{  [ { 'src' : role_path + '/templates/per_backup-rsync_filter'
-              , 'dest': rsync_filters_dir + '/'
-                        + inventory_hostname + '-' + item.name + '.rsync-filter'
-              , 'r_name': item.name
-              }
-            ] + r_data_templates }}
-    loop: "{{ r_backups }}"
-
-- block:
-  - name: Define backup scripts list
-    set_fact:
-      r_data_files: >
-        {{  [ { 'src' : role_path + '/' + item.script
-              , 'dest': rsync_filters_dir + '/'
-                        + inventory_hostname + '-' + item.script | basename
-              , 'mode': '0755'
-              }
-            ] + r_data_files }}
-    loop: "{{ r_backup_scripts }}"
   tags:
-    - rsnapshot_filters
+    - 'rsnapshot_filters'
 
 - block:
+    - name: Ensure snapshot root directory exists
+      file:
+        mode: '0700'
+        owner: 'root'
+        group: 'root'
+        path:  "{{ r_snapshot_root + '/' + inventory_hostname }}"
+        state: directory
+      tags:
+        - 'rsnapshot_config'
 
-  - name: backups | Create data files
-    include_role:
-      name: sgf-restore
-    vars:
-      backup_dir: "{{ backup_root_dir + '/bh-backups' }}"
-      default_data_files: "{{ r_data_files }}"
-      default_data_templates: "{{ r_data_templates }}"
-      default_file_dest: 'huy'
+    - block:
+        - name: Ensure rsync filters directories exist
+          file:
+            dest:   "{{ item }}"
+            owner:  root
+            group:  root
+            mode:   0755
+            state:  directory
+          loop:
+            - "{{ rsync_filters_dir }}"
+            - "{{ rsync_filters_libdir }}"
+
+        - name: Copy rsync filters library files
+          copy:
+            src:    "{{ item }}"
+            dest:   "{{ rsync_filters_libdir }}"
+            force:  yes
+            backup: yes
+          with_fileglob:
+            - "rsnapshot.d/lib/*"
+
+      tags:
+        - 'rsnapshot_filters'
+
+    - name: Restore or create config files
+      include_role:
+        name: sgf-restore
+        apply:
+          tags:
+            - always
+      vars:
+        backup_dir: "{{ backup_root_dir + '/bh-backups' }}"
+        default_data_files: "{{ r_data_files }}"
+        default_data_templates: "{{ r_data_templates }}"
+        default_file_dest: 'huy'
+      tags:
+        - 'rsnapshot_config'
+        - 'rsnapshot_filters'
 
   delegate_to: "{{ backup_server }}"
   when: inventory_hostname in groups['backups']
-

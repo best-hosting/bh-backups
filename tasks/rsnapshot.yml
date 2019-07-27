@@ -1,7 +1,7 @@
 ---
 
 - block:
-    - name: Add rsnapshot.conf to templates list
+    - name: rsnapshot | Add rsnapshot.conf to templates list
       set_fact:
         r_data_templates: >
           {{  [ { 'src' : role_path + '/templates/rsnapshot.conf'
@@ -11,7 +11,7 @@
               ] + r_data_templates }}
 
     # FIXME: backup script destination path generation is hardcoded here.
-    - name: Add backup scripts to file list
+    - name: rsnapshot | Add backup scripts to file list
       set_fact:
         r_data_files: >
           {{  [ { 'src' : item.script
@@ -26,12 +26,12 @@
     - 'rsnapshot_config'
 
 - block:
-    - name: Define dictionary used in rsync filter templates
+    - name: rsnapshot | Define dictionary used in rsync filter templates
       set_fact:
         r_backup_filters: >
           {{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}
 
-    - name: Add rsync filter files to templates list
+    - name: rsnapshot | Add rsync filter files to templates list
       set_fact:
         r_data_templates: >
           {{  [ { 'src' : role_path + '/templates/per_backup-rsync_filter'
@@ -46,7 +46,7 @@
     - 'rsnapshot_filters'
 
 - block:
-    - name: Ensure snapshot root directory exists
+    - name: rsnapshot | Ensure snapshot root directory exists
       file:
         mode: '0700'
         owner: 'root'
@@ -57,7 +57,7 @@
         - 'rsnapshot_config'
 
     - block:
-        - name: Ensure rsync filters directories exist
+        - name: rsnapshot | Ensure rsync filters directories exist
           file:
             dest:   "{{ item }}"
             owner:  root
@@ -68,7 +68,7 @@
             - "{{ rsync_filters_dir }}"
             - "{{ rsync_filters_libdir }}"
 
-        - name: Copy rsync filters library files
+        - name: rsnapshot | Copy rsync filters library files
           copy:
             src:    "{{ item }}"
             dest:   "{{ rsync_filters_libdir }}"
@@ -80,7 +80,7 @@
       tags:
         - 'rsnapshot_filters'
 
-    - name: Restore or create config files
+    - name: rsnapshot | Restore or create config files
       include_role:
         name: sgf-restore
         apply:

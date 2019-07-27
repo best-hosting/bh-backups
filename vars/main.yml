@@ -14,10 +14,14 @@ r_ssh_hosts:
 ssh_host_pubkeys_db_dir: "{{ playbook_dir + '/ssh_host_pubkeys/' + inventory_hostname }}"
 ssh_host_keys: []
 
-# FIXME: For now, only single user is supported (assuming root).
+# I _need_ gather facts run against backup_server, to initialize these
+# variables!
+backup_user: "{{ hostvars[backup_server]['ansible_user_id'] }}"
+backup_user_dir: "{{ hostvars[backup_server]['ansible_user_dir'] }}"
+
 ssh_pubkeys_db_dir: "{{ playbook_dir + '/ssh_pubkeys' }}"
 ssh_pubkeys_backup_server_dir: >-
-  {{ ssh_pubkeys_db_dir + '/' + backup_server + '/' + ansible_user_id }}
+  {{ ssh_pubkeys_db_dir + '/' + backup_server + '/' + backup_user }}
 ssh_pubkeys_dir: >-
   {{ ssh_pubkeys_db_dir + '/' + inventory_hostname + '/' + ansible_user_id }}
 

@@ -20,17 +20,17 @@
           {% for h in r_ssh_hosts %}
             Host {{ h.ssh_host }}
               HostName {{ h.ssh_hostname }}
-              User root
+              User {{ ansible_user_id }}
           {% endfor %}
 
     - name: ssh | (backup_server) Add hosts to ssh config
       blockinfile:
         block: "{{ r_ssh_hosts }}"
         state:  present
-        owner:  'root'
-        group:  'root'
+        owner:  "{{ backup_user }}"
         mode:   '0600'
-        path:   '/root/.ssh/config'
+        path: >-
+          {{ backup_user_dir + '/.ssh/config' }}
         create: yes
 
   delegate_to: "{{ backup_server }}"
@@ -105,7 +105,7 @@
 
     - name: ssh | Add backup server to authorized_keys
       authorized_key:
-        user:   'root'
+        user:   "{{ ansible_user_id }}"
         state:  'present'
         key:    "{{ lookup('file', item.path) }}"
       loop: "{{ ssh_pubkeys_backup_server_found.files }}"

@@ -1,5 +1,7 @@
 ---
 
+# This tasks run _only_, when ansible runs against _backup_server_. I.e. there
+# is _no_ `delegate_to` here!
 - block:
     - name: backup_server | (local) Ensure local public keys directory exists
       file:
@@ -16,6 +18,6 @@
     - name: backup_server | Obtain backup server user ssh public keys
       synchronize:
         mode: pull
-        src:  "{{ ansible_user_dir + '/.ssh/id_rsa.pub' }}"
+        src: "{{ ansible_user_dir + '/.ssh/id_rsa.pub' }}"
         dest: "{{ ssh_pubkeys_dir }}"
 

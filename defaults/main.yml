@@ -39,3 +39,4 @@ r_backup_scripts:
     script: "{{ role_path + '/files/mysql.sh' }}"
 
 r_snapshot_root: '/var/cache/rsnapshot'
+

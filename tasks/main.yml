@@ -1,6 +1,13 @@
 ---
 # tasks file for bh-backups
 
+- name: Gather facts about backup server
+  setup:
+  delegate_to: "{{ backup_server }}"
+  delegate_facts: true
+  tags:
+    - always
+
 - block:
     - name: Include rsnapshot setup tasks
       import_tasks: tasks/rsnapshot.yml
@@ -13,8 +20,6 @@
         - 'rsnapshot_ssh'
 
   when: inventory_hostname in groups['backups']
-  tags:
-    - backups
 
 - block:
     - name: Include backup server setup tasks

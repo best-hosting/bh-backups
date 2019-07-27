@@ -1,14 +1,14 @@
 ---
 # tasks file for bh-backups
 
-- name: Gather facts about backup server
-  setup:
-  delegate_to: "{{ backup_server }}"
-  delegate_facts: true
-  tags:
-    - always
-
 - block:
+    - name: Gather facts about backup server
+      setup:
+      delegate_to: "{{ backup_server }}"
+      delegate_facts: true
+      tags:
+        - always
+
     - name: Include rsnapshot setup tasks
       import_tasks: tasks/rsnapshot.yml
       tags:

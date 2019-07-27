@@ -21,3 +21,28 @@
         src: "{{ ansible_user_dir + '/.ssh/id_rsa.pub' }}"
         dest: "{{ ssh_pubkeys_dir }}"
 
+- block:
+    - name: backup_server | Install dependencies
+      package:
+        name: "{{ rsnapshot_pkgs }}"
+        state: 'present'
+
+    - block:
+        - name: backup_server | Add Debian Stretch repository to Debian Jessie
+          apt_repository:
+            repo: 'deb http://mirror.yandex.ru/debian/ stretch main'
+            filename: 'stretch'
+            state: present
+
+        - name: backup_server | Lower Debian Stretch priority
+          copy:
+            src:  'apt-preferences/10stretch'
+            dest: '/etc/apt/preferences.d/10stretch'
+
+        - name: backup_server | Install rsnapshot from Debian Stretch
+          apt:
+            name: rsnapshot=1.4.2-1
+            state: present
+
+      when: ansible_distribution == "Debian" and ansible_distribution_major_version | int == 8
+

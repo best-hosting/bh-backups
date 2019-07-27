@@ -97,16 +97,3 @@
 
   delegate_to: "{{ backup_server }}"
 
-- block:
-    - name: Install dependencies
-      package:
-        name: >-
-          {{ ( ['rsnapshot']
-                  + r_backup_scripts | map(attribute='depends') | list
-             ) | flatten
-          }}
-        state: 'present'
-
-  delegate_to: "{{ backup_server }}"
-  tags:
-    - huy

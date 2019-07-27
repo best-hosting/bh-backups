@@ -1,8 +1,9 @@
 ---
 
+# _backup server_ : Add Host-s to ssh config.
 - block:
     # FIXME: ssh hostname expected by backup script is hardcoded here.
-    - name: Define ssh hostnames
+    - name: ssh | Define ssh hostnames
       set_fact:
         r_ssh_hosts: >
           {{  [{ 'ssh_host': item.ssh_host
@@ -13,7 +14,7 @@
           }}
       loop: "{{ r_backup_scripts }}"
 
-    - name: Define ssh config content
+    - name: ssh | Define ssh config content
       set_fact:
         r_ssh_hosts: |
           {% for h in r_ssh_hosts %}
@@ -22,7 +23,7 @@
               User root
           {% endfor %}
 
-    - name: Add ssh hosts
+    - name: ssh | (backup_server) Add hosts to ssh config
       blockinfile:
         block: "{{ r_ssh_hosts }}"
         state:  present
@@ -33,15 +34,18 @@
         create: yes
 
   delegate_to: "{{ backup_server }}"
-  when: inventory_hostname in groups['backups']
   tags:
-    - 'rsnapshot_ssh'
+    - 'rsnapshot_ssh_hosts'
 
+# _localhost_ : Obtain ssh host pubkeys.
 - block:
-    - name: Create host keys dir locally
-      local_action: file path={{ ssh_host_keys_db_dir }} state=directory
+    - name: ssh | (local) Ensure ssh host public keys directory exists
+      file:
+        path: "{{ ssh_host_pubkeys_db_dir }}"
+        state: directory
+      delegate_to: localhost
 
-    - name: Get a list of ssh host public keys
+    - name: ssh | Find ssh host public keys
       find:
         paths: '/etc/ssh'
         patterns: '^ssh_host_[^/]+_key\.pub$'
@@ -49,29 +53,37 @@
         file_type:  'file'
       register: ssh_host_keys_found
 
-    - name: Obtain ssh host key
+    - name: ssh | Obtain ssh host public keys
       synchronize:
         mode: pull
         recursive: yes
         delete: yes
         src: "{{ item.path }}"
-        dest: "{{ ssh_host_keys_db_dir }}"
+        dest: "{{ ssh_host_pubkeys_db_dir }}"
       loop: "{{ ssh_host_keys_found.files }}"
 
   tags:
-    - 'rsnapshot_ssh'
     - 'ssh_host_keys_db'
 
+# _localhost_ : Parse saved ssh host keys on _localhost_.
 - block:
-    - name: Get a list of ssh host public keys stored in local db
+    - name: ssh | (local) Find backup server ssh public keys
       find:
-        paths: "{{ ssh_host_keys_db_dir }}"
+        paths:      "{{ ssh_pubkeys_backup_server_dir }}"
+        patterns:   '^id_rsa.pub$'
+        use_regex:  'yes'
+        file_type:  'file'
+      register: ssh_pubkeys_backup_server_found
+
+    - name: ssh | (local) Find ssh host public keys
+      find:
+        paths: "{{ ssh_host_pubkeys_db_dir }}"
         patterns: '^ssh_host_[^/]+_key\.pub$'
         use_regex:  'yes'
         file_type:  'file'
       register: ssh_host_keys_local_db
 
-    - name: Parse ssh host public keys
+    - name: ssh | Parse ssh host public keys
       set_fact:
         ssh_host_keys: >
           {{  [ dict( ['keytype', 'key', 'host']
@@ -80,43 +92,21 @@
               ] + ssh_host_keys }}
       loop: "{{ ssh_host_keys_local_db.files }}"
 
-    - name: Huy
-      debug:
-        var: ssh_host_keys
-
   delegate_to: localhost
-  tags:
-    - 'rsnapshot_ssh'
 
 - block:
-    - name: Add server to backups server's known hosst
+    - name: ssh | (backup_server) Add to backup server's known_hosts
       known_hosts:
         name: "{{ ansible_host }}"
         key:  "{{ ansible_host + ' ' + item.keytype + ' ' + item.key }}"
         hash_host: yes
       loop: "{{ ssh_host_keys }}"
+      delegate_to: "{{ backup_server }}"
 
-  delegate_to: "{{ backup_server }}"
-  tags:
-    - 'rsnapshot_ssh'
-
-- block:
-    - name: Get a list of backup server ssh root public keys
-      find:
-        paths:      "{{ ssh_root_pubkeys_db_dir + '/' + backup_server }}"
-        patterns:   '^id_rsa.pub$'
-        use_regex:  'yes'
-        file_type:  'file'
-      register: ssh_root_pubkeys_found
-      delegate_to: localhost
-
-    - name: Add backup server key
+    - name: ssh | Add backup server to authorized_keys
       authorized_key:
         user:   'root'
         state:  'present'
         key:    "{{ lookup('file', item.path) }}"
-      loop: "{{ ssh_root_pubkeys_found.files }}"
+      loop: "{{ ssh_pubkeys_backup_server_found.files }}"
 
-  tags:
-    - 'rsnapshot_ssh'
-    - huy

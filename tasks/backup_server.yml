@@ -1,9 +1,9 @@
 ---
 
 - block:
-    - name: Create local directory for backup server root keys
+    - name: backup_server | (local) Ensure local public keys directory exists
       file:
-        path: "{{ ssh_root_pubkeys_db_dir + '/' + inventory_hostname }}"
+        path: "{{ ssh_pubkeys_dir }}"
         state: directory
       delegate_to: localhost
 
@@ -13,9 +13,9 @@
       #        path:   '/root/.ssh/id_rsa'
       #        state:  present
 
-    - name: Obtain backup server root ssh pubkey
+    - name: backup_server | Obtain backup server user ssh public keys
       synchronize:
         mode: pull
-        src:  '/root/.ssh/id_rsa.pub'
-        dest: "{{ ssh_root_pubkeys_db_dir + '/' + inventory_hostname }}"
+        src:  "{{ ansible_user_dir + '/.ssh/id_rsa.pub' }}"
+        dest: "{{ ssh_pubkeys_dir }}"
 

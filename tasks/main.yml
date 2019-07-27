@@ -4,11 +4,17 @@
 - block:
     - name: Include rsnapshot setup tasks
       import_tasks: tasks/rsnapshot.yml
+      tags:
+        - 'rsnapshot'
 
     - name: Include ssh setup tasks
       import_tasks: tasks/ssh.yml
+      tags:
+        - 'rsnapshot_ssh'
 
   when: inventory_hostname in groups['backups']
+  tags:
+    - backups
 
 - block:
     - name: Include backup server setup tasks

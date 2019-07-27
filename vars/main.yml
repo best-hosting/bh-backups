@@ -11,7 +11,13 @@ r_ssh_hosts:
   - ssh_host: "{{ inventory_hostname }}"
     ssh_hostname: "{{ ansible_host }}"
 
-ssh_host_keys_db_dir: "{{ playbook_dir + '/ssh_host_keys/' + inventory_hostname }}"
+ssh_host_pubkeys_db_dir: "{{ playbook_dir + '/ssh_host_pubkeys/' + inventory_hostname }}"
 ssh_host_keys: []
 
-ssh_root_pubkeys_db_dir: "{{ playbook_dir + '/ssh_root_keys' }}"
+# FIXME: For now, only single user is supported (assuming root).
+ssh_pubkeys_db_dir: "{{ playbook_dir + '/ssh_pubkeys' }}"
+ssh_pubkeys_backup_server_dir: >-
+  {{ ssh_pubkeys_db_dir + '/' + backup_server + '/' + ansible_user_id }}
+ssh_pubkeys_dir: >-
+  {{ ssh_pubkeys_db_dir + '/' + inventory_hostname + '/' + ansible_user_id }}
+

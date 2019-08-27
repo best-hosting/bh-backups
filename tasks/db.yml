@@ -1,0 +1,35 @@
+---
+
+- block:
+    - name: db | Add mysql user for backup server
+      mysql_user:
+        name:     "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        host:     'localhost'
+        priv:     '*.*:SELECT,SUPER,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER'
+        state:    present
+
+    - name: db | Define mysql config content
+      set_fact:
+        r_mysql_cnf: |
+          [client]
+          user = {{ mysql_user }}
+          password = {{ mysql_password }}
+
+    - name: db | (backup_server) Create mysql config
+      blockinfile:
+        block:  "{{ r_mysql_cnf }}"
+        state:  present
+        owner:  "{{ backup_user }}"
+        mode:   '0600'
+        path: >-
+          {{  rsync_filters_dir + '/'
+                + item.ssh_host
+                  | default(inventory_hostname + '-'
+                            + item.script | basename | splitext | first)
+                            + '.cnf'
+          }}
+        create: yes
+      loop: "{{ r_backup_scripts }}"
+      delegate_to: "{{ backup_server }}"
+

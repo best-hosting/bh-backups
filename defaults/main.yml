@@ -40,3 +40,5 @@ r_backup_scripts:
 
 r_snapshot_root: '/var/cache/rsnapshot'
 
+mysql_user: "{{ backup_server }}"
+mysql_password: "{{ lookup('file', 'backup_mysql.password') }}"

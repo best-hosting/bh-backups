@@ -19,6 +19,11 @@
       tags:
         - 'rsnapshot_ssh'
 
+    - name: Include database setup tasks
+      import_tasks: tasks/db.yml
+      tags:
+        - 'rsnapshot_db'
+
   when: inventory_hostname in groups['backups']
 
 - block:

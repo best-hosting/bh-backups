@@ -51,21 +51,24 @@
     - name: rsnapshot | Add backup scripts conf files to template list
       set_fact:
         r_data_templates: >-
-          {{  [ { 'src' : item.script
+          {{  [ { 'src' : role_path + '/templates/backup_script-cnf'
                 , 'dest': rsync_filters_dir + '/'
+                            + inventory_hostname + '-'
                             + item.script | basename | splitext | first + '.cnf'
-                , 'mode': '0755'
-                , 'r_name':     item.name | defined(db_name)
-                , 'r_password': item.password | defuault(db_password)
+                , 'mode': '0700'
+                , 'r_name':     item.name
                 }
               ] + r_data_templates }}
       loop: "{{ r_backup_scripts }}"
 
     - name: rsnapshot | Define dictionary used in backup script conf template
       set_fact:
-        r_backup_filters: >
+        r_backup_script_confs: >
           {{ r_backup_scripts | items2dict(key_name='name', value_name='conf') }}
 
+    - name: HUY
+      debug:
+        var: r_backup_script_confs
   tags:
     - 'rsnapshot_scripts'
 

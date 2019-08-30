@@ -42,7 +42,7 @@ r_backup_scripts:
   - name:   'mysql'
     script: "{{ role_path + '/files/mysql.sh' }}"
     dst:    'mysql'
-    conf:   "{{ bh_mysql_cnf }}"
+    conf:   'huy'
 
 r_snapshot_root: '/var/cache/rsnapshot'
 

@@ -37,7 +37,6 @@ r_backup_scripts:
   - name:   'mysql'
     script: "{{ role_path + '/files/mysql.sh' }}"
     dst:    'mysql'
-    user: 'psst'
     password: 'blyat'
 
 r_snapshot_root: '/var/cache/rsnapshot'

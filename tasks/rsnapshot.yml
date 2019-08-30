@@ -46,6 +46,26 @@
     - 'rsnapshot_filters'
 
 - block:
+    - name: rsnapshot | Define dictionary used in rsync filter templates
+      set_fact:
+        r_backup_filters: >
+          {{ r_backups | items2dict(key_name='name', value_name='rsync_filter') }}
+
+    - name: rsnapshot | Add backup script conf files to templates list
+      set_fact:
+        r_data_templates: >
+          {{  [ { 'src' : role_path + '/templates/backup_script-conf'
+                , 'dest': rsync_filters_dir + '/'
+                          + inventory_hostname + '-' + item.name + '.rsync-filter'
+                , 'r_name': item.name
+                }
+              ] + r_data_templates }}
+      loop: "{{ r_backups }}"
+
+  tags:
+    - 'rsnapshot_scripts_conf'
+
+- block:
     - name: rsnapshot | Ensure snapshot root directory exists
       file:
         mode: '0700'

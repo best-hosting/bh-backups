@@ -33,12 +33,21 @@ r_backups:
     dst:  'home'
     rsync_filter: "{{ bh_home_rsync_filter }}"
 
+bh_mysql_cnf: |
+    [client]
+    user = {{ item.r_user }}
+    password = {{ item.r_password }}
+
 r_backup_scripts:
-  - name: 'mysql'
-    dst:  'mysql'
+  - name:   'mysql'
     script: "{{ role_path + '/files/mysql.sh' }}"
+    dst:    'mysql'
+    conf:   "{{ bh_mysql_cnf }}"
 
 r_snapshot_root: '/var/cache/rsnapshot'
 
-mysql_user: "{{ backup_server }}"
-mysql_password: "{{ lookup('file', 'backup_mysql.password') }}"
+# Default database user name.
+db_user: "{{ backup_server }}"
+
+# Default database user password.
+db_password: "{{ lookup('file', 'backup_mysql.password') }}"

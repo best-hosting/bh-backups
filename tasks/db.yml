@@ -3,11 +3,12 @@
 - block:
     - name: db | Add mysql user for backup server
       mysql_user:
-        name:     "{{ mysql_user }}"
-        password: "{{ mysql_password }}"
+        name:     "{{ item.user     | default(db_user) }}"
+        password: "{{ item.password | default(db_password) }}"
         host:     'localhost'
         priv:     '*.*:SELECT,SUPER,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER'
         state:    present
+      loop: "{{ r_backup_scripts }}"
 
     - name: db | Define mysql config content
       set_fact:

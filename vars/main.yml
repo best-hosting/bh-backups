@@ -37,3 +37,5 @@ rsnapshot_pkgs:
       mysql-client
   {%- endif %}
 
+r_backup_filters: {}
+r_backup_script_confs: {}

@@ -2,13 +2,14 @@
 
 # _backup server_ : Add Host-s to ssh config.
 - block:
-    # FIXME: ssh hostname expected by backup script is hardcoded here.
+    # FIXME: ssh host name expected by backup script is hardcoded here.
+    # Now it's expected to match with the name, which script will have on
+    # backup server (after install).
     - name: ssh | Define ssh hostnames
       set_fact:
         r_ssh_hosts: >
-          {{  [{ 'ssh_host': item.ssh_host
-                              | default(inventory_hostname + '-'
-                                        + item.script | basename | splitext | first)
+          {{  [{ 'ssh_host':    inventory_hostname + '-'
+                                  + item.script | basename | splitext | first
               , 'ssh_hostname': item.ssh_hostname | default(ansible_host)
               }] + r_ssh_hosts
           }}

@@ -37,6 +37,7 @@
   delegate_to: "{{ backup_server }}"
   tags:
     - 'rsnapshot_ssh_hosts'
+    - 'rsnapshot_db'
 
 # _localhost_ : Obtain ssh host pubkeys.
 - block:
@@ -94,6 +95,8 @@
       loop: "{{ ssh_host_keys_local_db.files }}"
 
   delegate_to: localhost
+  tags:
+    - 'ssh_host_access'
 
 - block:
     - name: ssh | (backup_server) Add to backup server's known_hosts
@@ -110,4 +113,6 @@
         state:  'present'
         key:    "{{ lookup('file', item.path) }}"
       loop: "{{ ssh_pubkeys_backup_server_found.files }}"
+  tags:
+    - 'ssh_host_access'
 

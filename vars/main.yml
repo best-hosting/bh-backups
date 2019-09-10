@@ -39,6 +39,7 @@ rsnapshot_pkgs:
   {%- elif ansible_distribution == "Debian" -%}
       mysql-client
   {%- endif %}
+- 'postgresql-client'
 
 r_backup_scripts_mysql: []
 r_backup_scripts_pgsql: []

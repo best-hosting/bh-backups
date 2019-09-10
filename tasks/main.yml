@@ -23,7 +23,6 @@
       import_tasks: tasks/rsnapshot.yml
       tags:
         - 'rsnapshot'
-        - 'rsnapshot_db'
 
   when: inventory_hostname in groups['backups']
 

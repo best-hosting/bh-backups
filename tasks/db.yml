@@ -8,5 +8,28 @@
         host:     'localhost'
         priv:     '*.*:SELECT,SUPER,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER'
         state:    present
+      when: item.name == 'mysql'
       loop: "{{ r_backup_scripts }}"
+  when: db_mysql
 
+- block:
+    - name: db | Ensure postgresql packages installed
+      package:
+        name:
+          - 'sudo'
+          - 'python-psycopg2'
+        state: 'present'
+
+    - name: db | Add PostgreSQL user for backup server
+      postgresql_user:
+        name:     "{{ item.user     | default(db_user) }}"
+        password: "{{ item.password | default(db_password) }}"
+        role_attr_flags:  'SUPERUSER'
+        state:    present
+      when: item.name == 'pgsql'
+      loop: "{{ r_backup_scripts }}"
+      become: yes
+      become_user: 'postgres'
+  when: db_postgresql
+
+  # FIXME: Set up pg_hba.conf correctly.

@@ -38,6 +38,11 @@ r_backup_scripts:
     script: "{{ role_path + '/files/mysql.sh' }}"
     dst:    'mysql'
     password: 'blyat'
+  - name:   'pgsql'
+    script: "{{ role_path + '/files/pgsql.sh' }}"
+    dst:    'pgsql'
+    password: 'epta'
+
 
 r_snapshot_root: '/var/cache/rsnapshot'
 
@@ -46,3 +51,4 @@ db_user: "{{ backup_server }}"
 
 # Default database user password.
 db_password: "{{ lookup('file', 'backup_mysql.password') }}"
+

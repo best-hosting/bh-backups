@@ -109,6 +109,14 @@
                 , 'mode': '0700'
                 , 'r_name': item.name
                 }
+              , 
+                { 'src' : role_path + '/templates/pgsql.pgpass'
+                , 'dest': rsync_filters_dir + '/'
+                            + inventory_hostname + '-'
+                            + item.script | basename | splitext | first + '.pgpass'
+                , 'mode': '0700'
+                , 'r_name': item.name
+                }
               ] + r_data_templates }}
       loop: "{{ r_backup_scripts_pgsql }}"
 
@@ -118,6 +126,9 @@
           {{  { item.name :
                   { 'user'      : item.user     | default(db_user)
                   , 'password'  : item.password | default(db_password)
+                  , 'passfile'  : rsync_filters_dir + '/'
+                                    + inventory_hostname + '-'
+                                    + item.script | basename | splitext | first + '.pgpass'
                   }
               } | combine(r_backup_script_confs)
           }}

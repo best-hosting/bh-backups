@@ -6,6 +6,9 @@ nl='
 '
 OIFS="$IFS"
 
+# Include config.
+. "/etc/rsnapshot.d/$(basename "$0" .sh).cnf"
+
 # Find unused local port.
 # Args:
 # 1 - port number to start from.

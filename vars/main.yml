@@ -6,6 +6,9 @@ rsync_filters_libdir: "{{ install_path + '/rsnapshot.d/lib' }}"
 r_data_templates: []
 r_data_files: []
 
+r_backup_filters: {}
+r_backup_script_confs: {}
+
 # By default, at least ssh config entry for current host is required.
 r_ssh_hosts:
   - ssh_host: "{{ inventory_hostname }}"
@@ -37,8 +40,8 @@ rsnapshot_pkgs:
       mysql-client
   {%- endif %}
 
-r_backup_filters: {}
-r_backup_script_confs: {}
+r_backup_scripts_mysql: []
+r_backup_scripts_pgsql: []
 
 # Whether to set up backups of mysql. Guessed from backup scripts.
 db_mysql: >-

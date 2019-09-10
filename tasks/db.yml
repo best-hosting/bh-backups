@@ -1,6 +1,14 @@
 ---
 
 - block:
+    - name: db | Filter out mysql scripts
+      set_fact:
+        r_backup_scripts_mysql: >-
+          {{ r_backup_scripts
+                | selectattr('script', 'equalto', role_path + '/files/mysql.sh')
+                | list
+          }}
+
     - name: db | Add mysql user for backup server
       mysql_user:
         name:     "{{ item.user     | default(db_user) }}"
@@ -8,12 +16,58 @@
         host:     'localhost'
         priv:     '*.*:SELECT,SUPER,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER'
         state:    present
-      when: item.name == 'mysql'
-      loop: "{{ r_backup_scripts }}"
+      loop: "{{ r_backup_scripts_mysql }}"
+
+    # FIXME: backup script destination path generation is hardcoded here.
+    # And now it's expected to be the same as ssh host name (defined in backup
+    # server's ~/.ssh/config) script will try to connect.
+    - name: db | Add backup scripts to file list
+      set_fact:
+        r_data_files: >-
+          {{  [ { 'src' : item.script
+                , 'dest': rsync_filters_dir + '/'
+                            + inventory_hostname + '-' + item.script | basename
+                , 'mode': '0755'
+                }
+              ] + r_data_files }}
+      loop: "{{ r_backup_scripts_mysql }}"
+
+    - name: db | Add backup scripts conf files to template list
+      set_fact:
+        r_data_templates: >-
+          {{  [ { 'src' : role_path + '/templates/backup_script-cnf'
+                , 'dest': rsync_filters_dir + '/'
+                            + inventory_hostname + '-'
+                            + item.script | basename | splitext | first + '.cnf'
+                , 'mode': '0700'
+                , 'r_name': item.name
+                }
+              ] + r_data_templates }}
+      loop: "{{ r_backup_scripts_mysql }}"
+
+    - name: db | Define dictionary used in backup script conf template
+      set_fact:
+        r_backup_script_confs: >-
+          {{  { item.name :
+                  { 'user'      : item.user     | default(db_user)
+                  , 'password'  : item.password | default(db_password)
+                  }
+              } | combine(r_backup_script_confs)
+          }}
+      loop: "{{ r_backup_scripts_mysql }}"
+
   when: db_mysql
 
 - block:
-    - name: db | Ensure postgresql packages installed
+    - name: db | Filter out PostgreSQL scripts
+      set_fact:
+        r_backup_scripts_pgsql: >-
+          {{ r_backup_scripts
+                | selectattr('script', 'equalto', role_path + '/files/pgsql.sh')
+                | list
+          }}
+
+    - name: db | Ensure PostgreSQL packages installed
       package:
         name:
           - 'sudo'
@@ -26,10 +80,49 @@
         password: "{{ item.password | default(db_password) }}"
         role_attr_flags:  'SUPERUSER'
         state:    present
-      when: item.name == 'pgsql'
-      loop: "{{ r_backup_scripts }}"
       become: yes
       become_user: 'postgres'
+      when: item.name == 'pgsql'
+      loop: "{{ r_backup_scripts_pgsql }}"
+
+    # FIXME: backup script destination path generation is hardcoded here.
+    # And now it's expected to be the same as ssh host name (defined in backup
+    # server's ~/.ssh/config) script will try to connect.
+    - name: db | Add backup scripts to file list
+      set_fact:
+        r_data_files: >-
+          {{  [ { 'src' : item.script
+                , 'dest': rsync_filters_dir + '/'
+                            + inventory_hostname + '-' + item.script | basename
+                , 'mode': '0755'
+                }
+              ] + r_data_files }}
+      loop: "{{ r_backup_scripts_pgsql }}"
+
+    - name: db | Add backup scripts conf files to template list
+      set_fact:
+        r_data_templates: >-
+          {{  [ { 'src' : role_path + '/templates/pgsql.cnf'
+                , 'dest': rsync_filters_dir + '/'
+                            + inventory_hostname + '-'
+                            + item.script | basename | splitext | first + '.cnf'
+                , 'mode': '0700'
+                , 'r_name': item.name
+                }
+              ] + r_data_templates }}
+      loop: "{{ r_backup_scripts_pgsql }}"
+
+    - name: db | Define dictionary used in backup script conf template
+      set_fact:
+        r_backup_script_confs: >-
+          {{  { item.name :
+                  { 'user'      : item.user     | default(db_user)
+                  , 'password'  : item.password | default(db_password)
+                  }
+              } | combine(r_backup_script_confs)
+          }}
+      loop: "{{ r_backup_scripts_pgsql }}"
+
   when: db_postgresql
 
   # FIXME: Set up pg_hba.conf correctly.

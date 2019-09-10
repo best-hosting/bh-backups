@@ -1,0 +1,3 @@
+
+PGUSER="{{ r_backup_script_confs[item.r_name].user }}"
+PGPASSFILE="{{ r_backup_script_confs[item.r_name].password }}"

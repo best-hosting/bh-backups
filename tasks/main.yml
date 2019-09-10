@@ -9,11 +9,6 @@
       tags:
         - always
 
-    - name: Include rsnapshot setup tasks
-      import_tasks: tasks/rsnapshot.yml
-      tags:
-        - 'rsnapshot'
-
     - name: Include ssh setup tasks
       import_tasks: tasks/ssh.yml
       tags:
@@ -22,6 +17,12 @@
     - name: Include database setup tasks
       import_tasks: tasks/db.yml
       tags:
+        - 'rsnapshot_db'
+
+    - name: Include rsnapshot setup tasks
+      import_tasks: tasks/rsnapshot.yml
+      tags:
+        - 'rsnapshot'
         - 'rsnapshot_db'
 
   when: inventory_hostname in groups['backups']

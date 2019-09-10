@@ -12,6 +12,7 @@
 
   tags:
     - 'rsnapshot_config'
+    - 'rsnapshot_db'
 
 - block:
     - name: rsnapshot | Add rsync filter files to templates list
@@ -34,51 +35,6 @@
     - 'rsnapshot_filters'
 
 - block:
-    # FIXME: backup script destination path generation is hardcoded here.
-    # And now it's expected to be the same as ssh host name (defined in backup
-    # server's ~/.ssh/config) script will try to connect.
-    - name: rsnapshot | Add backup scripts to file list
-      set_fact:
-        r_data_files: >-
-          {{  [ { 'src' : item.script
-                , 'dest': rsync_filters_dir + '/'
-                            + inventory_hostname + '-' + item.script | basename
-                , 'mode': '0755'
-                }
-              ] + r_data_files }}
-      loop: "{{ r_backup_scripts }}"
-
-    - name: rsnapshot | Add backup scripts conf files to template list
-      set_fact:
-        r_data_templates: >-
-          {{  [ { 'src' : role_path + '/templates/backup_script-cnf'
-                , 'dest': rsync_filters_dir + '/'
-                            + inventory_hostname + '-'
-                            + item.script | basename | splitext | first + '.cnf'
-                , 'mode': '0700'
-                , 'r_name': item.name
-                }
-              ] + r_data_templates }}
-      loop: "{{ r_backup_scripts }}"
-
-    - name: rsnapshot | Define dictionary used in backup script conf template
-      set_fact:
-        r_backup_script_confs: >-
-          {{  { item.name :
-                  { 'user'      : item.user     | default(db_user)
-                  , 'password'  : item.password | default(db_password)
-                  }
-              } | combine(r_backup_script_confs)
-          }}
-      loop: "{{ r_backup_scripts }}"
-
-    - name: HUY
-      debug:
-        var: r_backup_script_confs
-  tags:
-    - 'rsnapshot_scripts'
-
-- block:
     - name: rsnapshot | Ensure snapshot root directory exists
       file:
         mode: '0700'
@@ -88,28 +44,31 @@
         state: directory
       tags:
         - 'rsnapshot_config'
+        - 'rsnapshot_filters'
+        - 'rsnapshot_db'
 
-    - block:
-        - name: rsnapshot | Ensure rsync filters directories exist
-          file:
-            dest:   "{{ item }}"
-            owner:  root
-            group:  root
-            mode:   0755
-            state:  directory
-          loop:
-            - "{{ rsync_filters_dir }}"
-            - "{{ rsync_filters_libdir }}"
+    - name: rsnapshot | Ensure rsync filters directories exist
+      file:
+        dest:   "{{ item }}"
+        owner:  root
+        group:  root
+        mode:   0755
+        state:  directory
+      loop:
+        - "{{ rsync_filters_dir }}"
+        - "{{ rsync_filters_libdir }}"
+      tags:
+        - 'rsnapshot_filters'
+        - 'rsnapshot_db'
 
-        - name: rsnapshot | Copy rsync filters library files
-          copy:
-            src:    "{{ item }}"
-            dest:   "{{ rsync_filters_libdir }}"
-            force:  yes
-            backup: yes
-          with_fileglob:
-            - "rsnapshot.d/lib/*"
-
+    - name: rsnapshot | Copy rsync filters library files
+      copy:
+        src:    "{{ item }}"
+        dest:   "{{ rsync_filters_libdir }}"
+        force:  yes
+        backup: yes
+      with_fileglob:
+        - "rsnapshot.d/lib/*"
       tags:
         - 'rsnapshot_filters'
 
@@ -127,7 +86,7 @@
       tags:
         - 'rsnapshot_config'
         - 'rsnapshot_filters'
-        - 'rsnapshot_scripts'
+        - 'rsnapshot_db'
 
   delegate_to: "{{ backup_server }}"
 

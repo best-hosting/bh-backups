@@ -1,0 +1,4 @@
+[client]
+user = {{ r_backup_script_confs[item.r_name].user }}
+password = {{ r_backup_script_confs[item.r_name].password }}
+

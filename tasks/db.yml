@@ -35,7 +35,7 @@
     - name: db | Add backup scripts conf files to template list
       set_fact:
         r_data_templates: >-
-          {{  [ { 'src' : role_path + '/templates/backup_script-cnf'
+          {{  [ { 'src' : role_path + '/templates/mysql.cnf'
                 , 'dest': rsync_filters_dir + '/'
                             + inventory_hostname + '-'
                             + item.script | basename | splitext | first + '.cnf'

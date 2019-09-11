@@ -9,6 +9,11 @@
       tags:
         - always
 
+    - name: Define internal variables
+      import_tasks: tasks/define.yml
+      tags:
+        - always
+
     - name: Include ssh setup tasks
       import_tasks: tasks/ssh.yml
       tags:

@@ -4,7 +4,7 @@
     - name: db | Filter out mysql scripts
       set_fact:
         r_backup_scripts_mysql: >-
-          {{ r_backup_scripts
+          {{ r_backup_scripts2
                 | selectattr('script', 'equalto', role_path + '/files/mysql.sh')
                 | list
           }}
@@ -25,8 +25,7 @@
       set_fact:
         r_data_files: >-
           {{  [ { 'src' : item.script
-                , 'dest': rsync_filters_dir + '/'
-                            + inventory_hostname + '-' + item.script | basename
+                , 'dest': item.install
                 , 'mode': '0755'
                 }
               ] + r_data_files }}
@@ -36,9 +35,7 @@
       set_fact:
         r_data_templates: >-
           {{  [ { 'src' : role_path + '/templates/mysql.cnf'
-                , 'dest': rsync_filters_dir + '/'
-                            + inventory_hostname + '-'
-                            + item.script | basename | splitext | first + '.cnf'
+                , 'dest': item.install | splitext | first + '.cnf'
                 , 'mode': '0700'
                 , 'r_name': item.name
                 }
@@ -62,7 +59,7 @@
     - name: db | Filter out PostgreSQL scripts
       set_fact:
         r_backup_scripts_pgsql: >-
-          {{ r_backup_scripts
+          {{ r_backup_scripts2
                 | selectattr('script', 'equalto', role_path + '/files/pgsql.sh')
                 | list
           }}
@@ -92,28 +89,23 @@
       set_fact:
         r_data_files: >-
           {{  [ { 'src' : item.script
-                , 'dest': rsync_filters_dir + '/'
-                            + inventory_hostname + '-' + item.script | basename
+                , 'dest': item.install
                 , 'mode': '0755'
                 }
               ] + r_data_files }}
       loop: "{{ r_backup_scripts_pgsql }}"
 
-    - name: db | Add backup scripts conf files to template list
+    - name: db | Add PostgreSQL conf files to template list
       set_fact:
         r_data_templates: >-
           {{  [ { 'src' : role_path + '/templates/pgsql.cnf'
-                , 'dest': rsync_filters_dir + '/'
-                            + inventory_hostname + '-'
-                            + item.script | basename | splitext | first + '.cnf'
+                , 'dest': item.install | splitext | first + '.cnf'
                 , 'mode': '0700'
                 , 'r_name': item.name
                 }
               , 
                 { 'src' : role_path + '/templates/pgsql.pgpass'
-                , 'dest': rsync_filters_dir + '/'
-                            + inventory_hostname + '-'
-                            + item.script | basename | splitext | first + '.pgpass'
+                , 'dest': item.install | splitext | first + '.pgpass'
                 , 'mode': '0700'
                 , 'r_name': item.name
                 }
@@ -126,9 +118,7 @@
           {{  { item.name :
                   { 'user'      : item.user     | default(db_user)
                   , 'password'  : item.password | default(db_password)
-                  , 'passfile'  : rsync_filters_dir + '/'
-                                    + inventory_hostname + '-'
-                                    + item.script | basename | splitext | first + '.pgpass'
+                  , 'passfile'  : item.install | splitext | first + '.pgpass'
                   }
               } | combine(r_backup_script_confs)
           }}

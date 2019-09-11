@@ -1,0 +1,13 @@
+---
+
+- block:
+    - name: define | Define internal r_backup_scripts dictionary
+      set_fact:
+        r_backup_scripts2: >-
+          {{ r_backup_scripts2 + [item | combine(
+              { 'install': rsync_filters_dir + '/'
+                              + inventory_hostname + '-' + item.script | basename
+              })]
+          }}
+      loop: "{{ r_backup_scripts }}"
+

@@ -5,15 +5,17 @@
       set_fact:
         r_backup_scripts2: >-
           {{ r_backup_scripts2 + [item | combine(
-              { 'user'    : item.user     | default(db_user)
+              { 'dst'     : item.name
+              , 'user'    : item.user     | default(db_user)
               , 'password': item.password | default(db_password)
               , 'install' : rsync_filters_dir + '/'
-                              + inventory_hostname + '-' + item.script | basename
+                              + inventory_hostname + '-' + item.name
+                              + item.script | splitext | last
               })]
           }}
       loop: "{{ r_backup_scripts }}"
 
-    - name: define | Define mysql scripts dictionary
+    - name: define | Define MySQL scripts dictionary
       set_fact:
         r_backup_scripts_mysql: >-
           {{ r_backup_scripts_mysql + [ item | combine(
@@ -36,4 +38,11 @@
           }}
       when: item.script == role_path + '/files/pgsql.sh'
       loop: "{{ r_backup_scripts2 }}"
+
+    - name: define | MySQL backup scripts
+      debug:
+        var: r_backup_scripts_mysql
+    - name: define | PostgreSQL backup scripts
+      debug:
+        var: r_backup_scripts_pgsql
 

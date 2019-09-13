@@ -37,12 +37,17 @@ r_backups:
 r_backup_scripts:
   - name:   'mysql'
     script: "{{ role_path + '/files/mysql.sh' }}"
-    dst:    'mysql'
     password: 'blyat'
+  - name:   'mysql-her'
+    script: "{{ role_path + '/files/mysql.sh' }}"
+    password: 'blyaaaa'
   - name:   'pgsql'
     script: "{{ role_path + '/files/pgsql.sh' }}"
-    dst:    'pgsql'
     password: 'epta'
+  - name:   'pgsql-bzz'
+    script: "{{ role_path + '/files/pgsql.sh' }}"
+    password: 'epta'
+
 
 
 r_snapshot_root: '/var/cache/rsnapshot'

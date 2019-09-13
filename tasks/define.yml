@@ -5,9 +5,32 @@
       set_fact:
         r_backup_scripts2: >-
           {{ r_backup_scripts2 + [item | combine(
-              { 'install': rsync_filters_dir + '/'
+              { 'user'    : item.user     | default(db_user)
+              , 'password': item.password | default(db_password)
+              , 'install' : rsync_filters_dir + '/'
                               + inventory_hostname + '-' + item.script | basename
               })]
           }}
       loop: "{{ r_backup_scripts }}"
+
+    - name: define | Define mysql scripts dictionary
+      set_fact:
+        r_backup_scripts_mysql: >-
+          {{ r_backup_scripts2
+                | selectattr('script', 'equalto', role_path + '/files/mysql.sh')
+                | list
+          }}
+
+    - name: define | Define PostgreSQL scripts dictionary
+      set_fact:
+        r_backup_scripts_pgsql: >-
+          {{ r_backup_scripts_pgsql + [ item | combine(
+              { 'conf'              : role_path + '/templates/pgsql.cnf'
+              , 'install_conf'      : item.install | splitext | first + '.cnf'
+              , 'passfile'          : role_path + '/templates/pgsql.pgpass'
+              , 'install_passfile'  : item.install | splitext | first + '.pgpass'
+              })]
+          }}
+      when: item.script == role_path + '/files/pgsql.sh'
+      loop: "{{ r_backup_scripts2 }}"
 

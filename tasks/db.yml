@@ -1,14 +1,6 @@
 ---
 
 - block:
-    - name: db | Filter out mysql scripts
-      set_fact:
-        r_backup_scripts_mysql: >-
-          {{ r_backup_scripts2
-                | selectattr('script', 'equalto', role_path + '/files/mysql.sh')
-                | list
-          }}
-
     - name: db | Add mysql user for backup server
       mysql_user:
         name:     "{{ item.user     | default(db_user) }}"
@@ -46,8 +38,8 @@
       set_fact:
         r_backup_script_confs: >-
           {{  { item.name :
-                  { 'user'      : item.user     | default(db_user)
-                  , 'password'  : item.password | default(db_password)
+                  { 'user'      : item.user
+                  , 'password'  : item.password
                   }
               } | combine(r_backup_script_confs)
           }}
@@ -56,14 +48,6 @@
   when: db_mysql
 
 - block:
-    - name: db | Filter out PostgreSQL scripts
-      set_fact:
-        r_backup_scripts_pgsql: >-
-          {{ r_backup_scripts2
-                | selectattr('script', 'equalto', role_path + '/files/pgsql.sh')
-                | list
-          }}
-
     - name: db | Ensure PostgreSQL packages installed
       package:
         name:
@@ -73,8 +57,8 @@
 
     - name: db | Add PostgreSQL user for backup server
       postgresql_user:
-        name:     "{{ item.user     | default(db_user) }}"
-        password: "{{ item.password | default(db_password) }}"
+        name:     "{{ item.user }}"
+        password: "{{ item.password }}"
         role_attr_flags:  'SUPERUSER'
         state:    present
       become: yes
@@ -98,14 +82,14 @@
     - name: db | Add PostgreSQL conf files to template list
       set_fact:
         r_data_templates: >-
-          {{  [ { 'src' : role_path + '/templates/pgsql.cnf'
-                , 'dest': item.install | splitext | first + '.cnf'
+          {{  [ { 'src' : item.conf
+                , 'dest': item.install_conf
                 , 'mode': '0700'
                 , 'r_name': item.name
                 }
               , 
-                { 'src' : role_path + '/templates/pgsql.pgpass'
-                , 'dest': item.install | splitext | first + '.pgpass'
+                { 'src' : item.passfile
+                , 'dest': item.install_passfile
                 , 'mode': '0700'
                 , 'r_name': item.name
                 }
@@ -116,9 +100,9 @@
       set_fact:
         r_backup_script_confs: >-
           {{  { item.name :
-                  { 'user'      : item.user     | default(db_user)
-                  , 'password'  : item.password | default(db_password)
-                  , 'passfile'  : item.install | splitext | first + '.pgpass'
+                  { 'user'      : item.user
+                  , 'password'  : item.password
+                  , 'install_passfile'  : item.install_passfile
                   }
               } | combine(r_backup_script_confs)
           }}

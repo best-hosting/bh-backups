@@ -6,7 +6,7 @@
         r_backup_scripts2: >-
           {{ r_backup_scripts2 + [item | combine(
               { 'dst'     : item.name
-              , 'user'    : item.user     | default(db_user)
+              , 'user'    : item.user     | default(db_user) + '-' + item.name
               , 'password': item.password | default(db_password)
               , 'install' : rsync_filters_dir + '/'
                               + inventory_hostname + '-' + item.name

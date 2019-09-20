@@ -23,10 +23,11 @@
     - name: db | Add MySQL conf files to template list
       set_fact:
         r_data_templates: >-
-          {{  [ { 'src' : item.conf
-                , 'dest': item.install_conf
-                , 'mode': '0700'
+          {{  [ { 'src'   : item.conf
+                , 'dest'  : item.install_conf
+                , 'mode'  : '0700'
                 , 'r_name': item.name
+                , 'force' : true
                 }
               ] + r_data_templates }}
       loop: "{{ r_backup_scripts_mysql }}"
@@ -75,16 +76,18 @@
     - name: db | Add PostgreSQL conf files to template list
       set_fact:
         r_data_templates: >-
-          {{  [ { 'src' : item.conf
-                , 'dest': item.install_conf
-                , 'mode': '0700'
+          {{  [ { 'src'   : item.conf
+                , 'dest'  : item.install_conf
+                , 'mode'  : '0700'
                 , 'r_name': item.name
+                , 'force' : true
                 }
               , 
                 { 'src' : item.passfile
                 , 'dest': item.install_passfile
                 , 'mode': '0700'
                 , 'r_name': item.name
+                , 'force' : true
                 }
               ] + r_data_templates }}
       loop: "{{ r_backup_scripts_pgsql }}"

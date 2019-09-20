@@ -19,39 +19,22 @@ bh_home_rsync_filter: |
 
   . {{ rsync_filters_libdir }}/home-base.rsync-filter
 
-r_backups:
-  - name: 'root'
-    src:  '/'
-    dst:  'root'
-    rsync_filter: "{{ bh_root_rsync_filter }}"
-  - name: 'var_www'
-    src:  '/var/www'
-    dst:  'var/www'
-    rsync_filter: "{{ bh_home_rsync_filter }}"
-  - name: 'home'
-    src:  '/home'
-    dst:  'home'
-    rsync_filter: "{{ bh_home_rsync_filter }}"
+# Backup points definition.
+#r_backups:
+#  - name: 'root'
+#    src:  '/'
+#    dst:  'root'
+#    rsync_filter: "{{ bh_root_rsync_filter }}"
 
 bh_mysql_script: "{{ role_path + '/files/mysql.sh' }}"
 bh_pgsql_script: "{{ role_path + '/files/pgsql.sh' }}"
 
-# name must be unique in single r_backup_scripts list!
-r_backup_scripts:
-  - name:   'mysql'
-    script: "{{ bh_mysql_script }}"
-    password: 'suka-blyat'
-  - name:   'mysql-her'
-    script: "{{ bh_mysql_script }}"
-    password: 'blyaaaa-huuuy'
-  - name:   'pgsql'
-    script: "{{ bh_pgsql_script }}"
-    password: 'naher-epta'
-  - name:   'pgsql-bzz'
-    script: "{{ bh_pgsql_script }}"
-    password: 'epta-nahuy'
-
-
+# Backup scripts definition. Name must be unique in single r_backup_scripts
+# list!
+#r_backup_scripts:
+#  - name:   'mysql'
+#    password: 'pass'
+#    script: "{{ bh_mysql_script }}"
 
 r_snapshot_root: '/var/cache/rsnapshot'
 

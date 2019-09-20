@@ -4,9 +4,10 @@
     - name: rsnapshot | Add rsnapshot.conf to templates list
       set_fact:
         r_data_templates: >
-          {{  [ { 'src' : role_path + '/templates/rsnapshot.conf'
-                , 'dest': install_path + '/rsnapshot.' + inventory_hostname + '.conf'
-                , 'mode': '0755'
+          {{  [ { 'src'   : role_path + '/templates/rsnapshot.conf'
+                , 'dest'  : install_path + '/rsnapshot.' + inventory_hostname + '.conf'
+                , 'mode'  : '0755'
+                , 'force' : true
                 }
               ] + r_data_templates }}
 

@@ -60,7 +60,6 @@
         state:    present
       become: yes
       become_user: 'postgres'
-      when: item.name == 'pgsql'
       loop: "{{ r_backup_scripts_pgsql }}"
 
     - name: db | Add PostgreSQL backup scripts to file list

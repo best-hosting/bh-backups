@@ -33,19 +33,22 @@ r_backups:
     dst:  'home'
     rsync_filter: "{{ bh_home_rsync_filter }}"
 
+bh_mysql_script: "{{ role_path + '/files/mysql.sh' }}"
+bh_pgsql_script: "{{ role_path + '/files/pgsql.sh' }}"
+
 # name must be unique in single r_backup_scripts list!
 r_backup_scripts:
   - name:   'mysql'
-    script: "{{ role_path + '/files/mysql.sh' }}"
+    script: "{{ bh_mysql_script }}"
     password: 'suka-blyat'
   - name:   'mysql-her'
-    script: "{{ role_path + '/files/mysql.sh' }}"
+    script: "{{ bh_mysql_script }}"
     password: 'blyaaaa-huuuy'
   - name:   'pgsql'
-    script: "{{ role_path + '/files/pgsql.sh' }}"
+    script: "{{ bh_pgsql_script }}"
     password: 'naher-epta'
   - name:   'pgsql-bzz'
-    script: "{{ role_path + '/files/pgsql.sh' }}"
+    script: "{{ bh_pgsql_script }}"
     password: 'epta-nahuy'
 
 

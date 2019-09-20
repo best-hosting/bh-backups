@@ -37,16 +37,16 @@ r_backups:
 r_backup_scripts:
   - name:   'mysql'
     script: "{{ role_path + '/files/mysql.sh' }}"
-    password: 'blyat'
+    password: 'suka-blyat'
   - name:   'mysql-her'
     script: "{{ role_path + '/files/mysql.sh' }}"
-    password: 'blyaaaa'
+    password: 'blyaaaa-huuuy'
   - name:   'pgsql'
     script: "{{ role_path + '/files/pgsql.sh' }}"
-    password: 'epta'
+    password: 'naher-epta'
   - name:   'pgsql-bzz'
     script: "{{ role_path + '/files/pgsql.sh' }}"
-    password: 'epta'
+    password: 'epta-nahuy'
 
 
 

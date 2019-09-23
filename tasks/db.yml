@@ -1,6 +1,12 @@
 ---
 
 - block:
+    - name: db | Ensure MySQL packages installed
+      package:
+        name:
+          - 'python-mysqldb'
+        state: 'present'
+
     - name: db | Add MySQL user to backup server
       mysql_user:
         name:     "{{ item.user }}"

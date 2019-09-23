@@ -13,9 +13,10 @@
     - name: db | Add MySQL backup scripts to file list
       set_fact:
         r_data_files: >-
-          {{  [ { 'src' : item.script
-                , 'dest': item.install
-                , 'mode': '0755'
+          {{  [ { 'src'   : item.script
+                , 'dest'  : item.install
+                , 'mode'  : '0755'
+                , 'force' : true
                 }
               ] + r_data_files }}
       loop: "{{ r_backup_scripts_mysql }}"
@@ -66,9 +67,10 @@
     - name: db | Add PostgreSQL backup scripts to file list
       set_fact:
         r_data_files: >-
-          {{  [ { 'src' : item.script
-                , 'dest': item.install
-                , 'mode': '0755'
+          {{  [ { 'src'   : item.script
+                , 'dest'  : item.install
+                , 'mode'  : '0755'
+                , 'force' : true
                 }
               ] + r_data_files }}
       loop: "{{ r_backup_scripts_pgsql }}"

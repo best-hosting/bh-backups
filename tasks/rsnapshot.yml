@@ -23,6 +23,7 @@
                 , 'dest': rsync_filters_dir + '/'
                           + inventory_hostname + '-' + item.name + '.rsync-filter'
                 , 'r_name': item.name
+                , 'force' : true
                 }
               ] + r_data_templates }}
       loop: "{{ r_backups }}"

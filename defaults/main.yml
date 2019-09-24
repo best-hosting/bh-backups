@@ -44,3 +44,12 @@ db_user: "{{ backup_server }}"
 # Default database user password.
 db_password: "{{ lookup('file', 'backup_mysql.password') }}"
 
+r_sync:
+  hour: 2
+  minute: 30
+r_weekly:
+  hour: 2
+  minute: 15
+r_monthly:
+  hour: 2
+  minute: 0

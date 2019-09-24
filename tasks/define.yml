@@ -1,6 +1,18 @@
 ---
 
 - block:
+    - name: define | Define internal r_backups dictionary
+      set_fact:
+        r_backups2: >-
+          {{ r_backups2 + [item | combine(
+              { 'full_dst': item.dst + '/'
+              , 'full_src':
+                  ansible_user_id + '@' + inventory_hostname + ':'
+                  + ( item.src if item.src == '/' else item.src + '/././' )
+              })]
+          }}
+      loop: "{{ r_backups }}"
+
     - name: define | Define internal r_backup_scripts dictionary
       set_fact:
         r_backup_scripts2: >-

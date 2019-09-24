@@ -41,6 +41,8 @@ rsnapshot_pkgs:
   {%- endif %}
 - 'postgresql-client'
 
+# Internal r_backups version.
+r_backups2: []
 # Internal r_backup_scripts version.
 r_backup_scripts2: []
 

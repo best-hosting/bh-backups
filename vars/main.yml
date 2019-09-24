@@ -61,3 +61,5 @@ db_postgresql: >-
       | list | length > 0
   }}
 
+rsnapshot_conf: "{{ install_path + '/rsnapshot.' + inventory_hostname + '.conf' }}"
+

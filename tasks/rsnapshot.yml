@@ -42,7 +42,7 @@
         mode: '0700'
         owner: 'root'
         group: 'root'
-        path:  "{{ r_snapshot_root + '/' + inventory_hostname }}"
+        path:  "{{ r_snapshot_root }}"
         state: directory
       tags:
         - 'rsnapshot_config'

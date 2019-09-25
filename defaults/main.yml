@@ -36,8 +36,9 @@ bh_pgsql_script: "{{ role_path + '/files/pgsql.sh' }}"
 #    password: 'pass'
 #    script: "{{ bh_mysql_script }}"
 
-# Root directory for all backups.
-r_backup_root: '/var/cache/rsnapshot'
+# Root directory for all backups. This variable must be set for _backup
+# server_.
+#r_backup_root: '/var/cache/rsnapshot'
 
 # Default database user name.
 db_user: "{{ backup_server }}"

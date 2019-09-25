@@ -1,6 +1,7 @@
 ---
 # Current server snapshot root. Does NOT include trailing slash!
-r_snapshot_root: "{{ r_backup_root + '/' + inventory_hostname }}"
+r_snapshot_root: >-
+  {{ hostvars[backup_server]['r_backup_root'] + '/' + inventory_hostname }}
 
 # vars file for bh-backups
 rsync_filters_dir: "{{ install_path + '/rsnapshot.d' }}"

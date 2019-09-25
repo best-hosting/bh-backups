@@ -9,6 +9,15 @@
       tags:
         - always
 
+    - name:
+      include_tasks:
+        file: 'tasks/count.yml'
+        apply:
+          tags:
+            - 'count_files'
+      tags:
+        - count_files
+
     - name: Define internal variables
       import_tasks: tasks/define.yml
       tags:

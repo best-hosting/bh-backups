@@ -1,0 +1,36 @@
+---
+
+- block:
+    - name: count | Stat backup points
+      stat:
+        path: "{{ r_snapshot_root + '/' + item }}"
+      loop: >-
+        {{  ( ['daily']   | product([0, 1, 2])  | list
+            + ['weekly']  | product([0])           | list
+            + ['monthly'] | product([0])           | list
+            ) | map('join', '.') | list
+        }}
+      register: r_interval_stats_list
+      delegate_to: "{{ backup_server }}"
+
+    - name: Rebuild to dict
+      set_fact:
+        r_interval_stats: "{{ r_interval_stats_list.results | items2dict(key_name='item', value_name='stat') }}"
+
+    - name: count | Huy
+      debug:
+        var: r_interval_stats
+
+    - name: count | Huy2
+      debug:
+        msg: >-
+          {{ 'd.1' if r_interval_stats['daily.1'].exists
+                else 'd.0' if r_interval_stats['daily.0'].exists
+                else 'sync' if r_interval_stats['sync'].exists
+                else 'huy'
+          }}
+
+- block:
+    - name: count | File count
+      command: >-
+        {{ /usr/bin/find '/backup/centreon/daily.1/root/' | wc -l }}

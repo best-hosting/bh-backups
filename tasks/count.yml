@@ -22,15 +22,26 @@
         var: r_interval_stats
 
     - name: count | Huy2
-      debug:
-        msg: >-
-          {{ 'd.1' if r_interval_stats['daily.1'].exists
-                else 'd.0' if r_interval_stats['daily.0'].exists
-                else 'sync' if r_interval_stats['sync'].exists
+      set_fact:
+        r_count_interval: >-
+          {{ 'daily.1' if r_interval_stats['daily.1'].exists
+                else 'daily.0' if r_interval_stats['daily.0'].exists
+                else '.sync' if r_interval_stats['sync'].exists
                 else 'huy'
           }}
+    - name: count | Huynya
+      debug:
+        var: r_count_interval
 
 - block:
     - name: count | File count
-      command: >-
-        {{ /usr/bin/find '/backup/centreon/daily.1/root/' | wc -l }}
+      shell: >-
+        {{ '/usr/bin/find '
+              + ( r_snapshot_root + '/' + r_count_interval + '/root/' | quote )
+              + '| wc -l' }}
+      register: file_count
+      delegate_to: "{{ backup_server }}"
+
+    - name: count | Huy
+      debug:
+        var: file_count

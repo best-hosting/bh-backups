@@ -4,30 +4,49 @@
     - name: define | Define internal r_backups dictionary
       set_fact:
         r_backups2: >-
-          {{ r_backups2 + [item | combine(
-              { 'full_dst': item.dst + '/'
-              , 'alias'   : item.dst | replace('/', '_')
+          {{ r_backups2 + [item.0 | combine(
+              { 'full_dst': item.0.dst + '/'
+              , 'alias'   : item.0.dst | replace('/', '_')
               , 'full_src':
                   ansible_user_id + '@' + inventory_hostname + ':'
-                  + ( item.src if item.src == '/' else item.src + '/././' )
+                  + ( item.0.src if item.0.src == '/' else item.0.src + '/././' )
+              , 'file_count': item.1.stdout | int
+              , 'size'      : item.2.stdout | regex_search('^[0-9]+(?=\t)') | int
               })]
           }}
-      loop: "{{ r_backups }}"
+      loop: >-
+        {{ r_backups
+            | zip(r_backups_file_count.results, r_backups_size.results)
+            | list
+        }}
 
     - name: define | Define internal r_backup_scripts dictionary
       set_fact:
         r_backup_scripts2: >-
-          {{ r_backup_scripts2 + [item | combine(
-              { 'dst'     : item.name
-              , 'alias'   : item.name | replace('/', '_')
-              , 'user'    : item.user     | default(db_user) + '-' + item.name
-              , 'password': item.password | default(db_password)
+          {{ r_backup_scripts2 + [item.0 | combine(
+              { 'dst'     : item.0.name
+              , 'alias'   : item.0.name | replace('/', '_')
+              , 'user'    : item.0.user     | default(db_user) + '-' + item.0.name
+              , 'password': item.0.password | default(db_password)
               , 'install' : rsync_filters_dir + '/'
-                              + inventory_hostname + '-' + item.name
-                              + item.script | splitext | last
+                              + inventory_hostname + '-' + item.0.name
+                              + item.0.script | splitext | last
+              , 'file_count': item.1.stdout | int
+              , 'size'      : item.2.stdout | regex_search('^[0-9]+(?=\t)') | int
               })]
           }}
-      loop: "{{ r_backup_scripts }}"
+      loop: >-
+        {{ r_backup_scripts
+            | zip(r_backup_scripts_file_count.results, r_backup_scripts_size.results)
+            | list
+        }}
+
+    - name: define | Backup points
+      debug:
+        var: r_backups2
+    - name: define | Backup scripts
+      debug:
+        var: r_backup_scripts2
 
     - name: define | Define MySQL scripts dictionary
       set_fact:

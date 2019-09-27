@@ -21,7 +21,7 @@
       debug:
         var: r_interval_stats
 
-    - name: count | Huy2
+    - name: count | Determine count interval
       set_fact:
         r_count_interval: >-
           {{ 'daily.1' if r_interval_stats['daily.1'].exists
@@ -34,14 +34,45 @@
         var: r_count_interval
 
 - block:
-    - name: count | File count
+    # If destination does not exist, file count will be 0.
+    - name: count | Count files in backups
       shell: >-
         {{ '/usr/bin/find '
-              + ( r_snapshot_root + '/' + r_count_interval + '/root/' | quote )
+              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst ) | quote
               + '| wc -l' }}
-      register: file_count
+      register: r_backups_file_count
       delegate_to: "{{ backup_server }}"
+      loop: "{{ r_backups }}"
+      changed_when: false
 
-    - name: count | Huy
-      debug:
-        var: file_count
+    - name: count | Count size of backups
+      command: >-
+        {{  '/usr/bin/du -s -b '
+              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst ) | quote
+        }}
+      register: r_backups_size
+      delegate_to: "{{ backup_server }}"
+      loop: "{{ r_backups }}"
+      changed_when: false
+
+- block:
+    - name: count | Count files in backup scripts dirs
+      shell: >-
+        {{ '/usr/bin/find '
+              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.name ) | quote
+              + '| wc -l' }}
+      register: r_backup_scripts_file_count
+      delegate_to: "{{ backup_server }}"
+      loop: "{{ r_backup_scripts }}"
+      changed_when: false
+
+    - name: count | Count size of backup scripts dirs
+      command: >-
+        {{  '/usr/bin/du -s -b '
+              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.name ) | quote
+        }}
+      register: r_backup_scripts_size
+      delegate_to: "{{ backup_server }}"
+      loop: "{{ r_backup_scripts }}"
+      changed_when: false
+

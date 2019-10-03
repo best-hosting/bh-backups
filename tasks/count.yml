@@ -1,6 +1,19 @@
 ---
 
 - block:
+    - name: count | State file data cache
+      stat:
+        path: "{{ rsnapshot_file_count_cache }}"
+      register: rsnapshot_file_count_cache_stats
+    - name: debug
+      debug:
+        var: rsnapshot_file_count_cache_stats
+    - name: count | Load  file count data
+      include_vars:
+        file: "{{ rsnapshot_file_count_cache_stats }}"
+      when: rsnapshot_file_count_cache_stats.stat.exists
+
+- block:
     - name: count | Stat backup points
       stat:
         path: "{{ r_snapshot_root + '/' + item }}"
@@ -33,6 +46,8 @@
       debug:
         var: r_count_interval
 
+  when: r_count_files
+
 - block:
     # If destination does not exist, file count will be 0.
     - name: count | Count files in backups
@@ -55,6 +70,8 @@
       loop: "{{ r_backups }}"
       changed_when: false
 
+  when: r_count_files
+
 - block:
     - name: count | Count files in backup scripts dirs
       shell: >-
@@ -75,4 +92,21 @@
       delegate_to: "{{ backup_server }}"
       loop: "{{ r_backup_scripts }}"
       changed_when: false
+
+  when: r_count_files
+
+- block:
+    - name: count | Ensure directory for caching rsnapshot file count data exist
+      file:
+        mode: '0700'
+        owner: 'root'
+        group: 'root'
+        path:  "{{ playbook_dir + 'rsnapshot_file_count' }}"
+        state: directory
+    - name: count | Save rsnapshot file count to local db
+      copy:
+        content:  "{{ r_backups_file_count | to_yaml }}"
+        dest:     "{{ rsnapshot_file_count_cache }}"
+
+  delegate_to: localhost
 

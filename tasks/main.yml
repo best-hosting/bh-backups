@@ -17,6 +17,7 @@
             - 'count_files'
       tags:
         - count_files
+        - count_huy
 
     - name: Define internal variables
       import_tasks: tasks/define.yml

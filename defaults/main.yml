@@ -55,3 +55,5 @@ r_weekly:
 r_monthly:
   hour: 2
   minute: 0
+
+r_count_files: yes

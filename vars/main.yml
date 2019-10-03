@@ -69,3 +69,6 @@ db_postgresql: >-
 
 rsnapshot_conf: "{{ install_path + '/rsnapshot.' + inventory_hostname + '.conf' }}"
 
+# File with variables discribing calculated earlier check_rsnapshot values.
+rsnapshot_file_count_cache: "{{ 'rsnapshot_file_count/' + inventory_hostname + '.yml' }}"
+

@@ -113,38 +113,25 @@
         r_files_count: >-
           {{ r_files_count | combine(
                 { item.0.name :
-                    { 'file_count' : r_files_count_cache[item.0.name]['file_count'] | default(
-                                        item.1.stdout | default(0))
-                    }
+                    r_files_count_cache[item.0.name] | default(
+                      item.1.stdout | default(0) | int)
                 })
           }}
       loop: >-
         {{ r_backups | zip(r_files_count_raw.results) | list }}
-    - name: count | File count info
-      debug:
-        var: r_files_count
 
-    - name: hh
-      debug:
-        var: r_size_raw
     - name: count | Rebuild size to dictionary
       set_fact:
         r_size: >-
           {{ r_size | combine(
                 { item.0.name :
-                    { 'size'  : r_size_cache[item.0.name]['size'] | default(
-                                    item.1.stdout | default("0")
-                                      | regex_search('^[0-9]+(?=\t)') | int
-                                  )
-                    }
+                    r_size_cache[item.0.name] | default(
+                        item.1.stdout | default("0") | regex_search('^[0-9]+(?=\t)') | int
+                      )
                 })
           }}
       loop: >-
         {{ r_backups | zip(r_size_raw.results) | list }}
-    - name: count | Size info
-      debug:
-        var: r_size
-
 
 - block:
     - name: count | Count files in backup scripts dirs

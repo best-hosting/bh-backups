@@ -11,6 +11,16 @@
         path: "{{ r_size_cache_file }}"
       register: r_size_cache_stats
 
+    - name: count | Stat scripts file count cache
+      stat:
+        path: "{{ r_scripts_files_count_cache_file }}"
+      register: r_scripts_files_count_cache_stats
+
+    - name: count | Stat scripts size cache
+      stat:
+        path: "{{ r_scripts_size_cache_file }}"
+      register: r_scripts_size_cache_stats
+
   delegate_to: localhost
 
 - block:
@@ -26,17 +36,17 @@
         name: r_size_cache
       when: r_size_cache_stats.stat.exists
 
-      #    - name: count | Load scripts file count cache
-      #      include_vars:
-      #        file: "{{ r_scripts_files_count_cache }}"
-      #        name: r_scripts_files_count_cache
-      #      when: r_cache_stats['r_scripts_files_count_cache'].exists
-      #
-      #    - name: count | Load scripts size cache
-      #      include_vars:
-      #        file: "{{ r_scripts_size_cache }}"
-      #        name: r_scripts_size_cache
-      #      when: r_cache_stats['r_scripts_size_cache'].exists
+    - name: count | Load scripts file count cache
+      include_vars:
+        file: "{{ r_scripts_files_count_cache }}"
+        name: r_scripts_files_count_cache
+      when: r_scripts_files_count_cache_stats.stat.exists
+
+    - name: count | Load scripts size cache
+      include_vars:
+        file: "{{ r_scripts_size_cache }}"
+        name: r_scripts_size_cache
+      when: r_scripts_size_cache_stats.stat.exists
 
     - name: count | Loaded file count cache
       debug:
@@ -134,29 +144,6 @@
         {{ r_backups | zip(r_size_raw.results) | list }}
 
 - block:
-    - name: count | Count files in backup scripts dirs
-      shell: >-
-        {{ '/usr/bin/find '
-              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.name ) | quote
-              + '| wc -l' }}
-      register: r_backup_scripts_files_count
-      delegate_to: "{{ backup_server }}"
-      loop: "{{ r_backup_scripts }}"
-      #changed_when: false
-
-    - name: count | Count size of backup scripts dirs
-      command: >-
-        {{  '/usr/bin/du -s -b '
-              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.name ) | quote
-        }}
-      register: r_backup_scripts_size
-      delegate_to: "{{ backup_server }}"
-      loop: "{{ r_backup_scripts }}"
-      #changed_when: false
-
-  when: r_count_files
-
-- block:
     - name: count | Ensure directory for caching rsnapshot file count data exist
       file:
         mode: '0700'
@@ -172,16 +159,6 @@
       copy:
         content:  "{{ r_size | to_yaml }}"
         dest:     "{{ r_size_cache_file }}"
-
-    - name: count | Save scripts file count locally
-      copy:
-        content:  "{{ r_scripts_files_count | to_yaml }}"
-        dest:     "{{ r_scripts_files_count_cache_file }}"
-
-    - name: count | Save scripts size locally
-      copy:
-        content:  "{{ r_scripts_size | to_yaml }}"
-        dest:     "{{ r_scripts_size_cache_file }}"
 
   delegate_to: localhost
 

@@ -4,21 +4,21 @@
     - name: define | Define internal r_backups dictionary
       set_fact:
         r_backups2: >-
-          {{ r_backups2 + [item.0 | combine(
-              { 'full_dst': item.0.dst + '/'
-              , 'alias'   : item.0.dst | replace('/', '_')
+          {{ r_backups2 + [item | combine(
+              { 'full_dst': item.dst + '/'
+              , 'alias'   : item.dst | replace('/', '_')
               , 'full_src':
                   ansible_user_id + '@' + inventory_hostname + ':'
-                  + ( item.0.src if item.0.src == '/' else item.0.src + '/././' )
-              , 'file_count': item.1.stdout | int
-              , 'size'      : item.2.stdout | regex_search('^[0-9]+(?=\t)') | int
+                  + ( item.src if item.src == '/' else item.src + '/././' )
+              , 'file_count': r_files_count[item.name]
+              , 'size'      : r_size[item.name]
               })]
           }}
-      loop: >-
-        {{ r_backups
-            | zip(r_files_count, r_size)
-            | list
-        }}
+      loop: "{{ r_backups }}"
+
+    - name: define | Backup points
+      debug:
+        var: r_backups2
 
     - name: define | Define internal r_backup_scripts dictionary
       set_fact:
@@ -41,9 +41,6 @@
             | list
         }}
 
-    - name: define | Backup points
-      debug:
-        var: r_backups2
     - name: define | Backup scripts
       debug:
         var: r_backup_scripts2

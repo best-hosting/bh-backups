@@ -56,4 +56,6 @@ r_monthly:
   hour: 2
   minute: 0
 
+# To recalculate values, remove cache file.
 r_count_files: yes
+

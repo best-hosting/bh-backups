@@ -16,7 +16,7 @@
           }}
       loop: >-
         {{ r_backups
-            | zip(r_backups_file_count.results, r_backups_size.results)
+            | zip(r_files_count, r_size)
             | list
         }}
 

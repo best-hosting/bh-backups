@@ -69,6 +69,26 @@ db_postgresql: >-
 
 rsnapshot_conf: "{{ install_path + '/rsnapshot.' + inventory_hostname + '.conf' }}"
 
-# File with variables discribing calculated earlier check_rsnapshot values.
-rsnapshot_file_count_cache: "{{ 'rsnapshot_file_count/' + inventory_hostname + '.yml' }}"
+r_files_count: {}
+r_size: {}
+
+r_scripts_file_count: {}
+r_scripts_size: {}
+
+r_files_count_raw: []
+r_files_count_cache: {}
+r_size_raw: []
+r_size_cache: {}
+
+# Cache files for calculated file count and sizes.
+r_cache_dir: "{{ playbook_dir + '/rsnapshot_cache' }}"
+r_files_count_cache_file: >-
+  {{ r_cache_dir + '/' + inventory_hostname + '-files_count.yml' }}
+r_size_cache_file: >-
+  {{ r_cache_dir + '/' + inventory_hostname + '-size.yml' }}
+
+r_scripts_files_count_cache: >-
+  {{ r_cache_dir + '/' + inventory_hostname + '-scripts-files_count.yml' }}
+r_scripts_size_cache: >-
+  {{ r_cache_dir + '/' + inventory_hostname + '-scripts-size.yml' }}
 

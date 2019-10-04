@@ -11,16 +11,6 @@
         path: "{{ r_size_cache_file }}"
       register: r_size_cache_stats
 
-    - name: count | Stat scripts file count cache
-      stat:
-        path: "{{ r_scripts_files_count_cache_file }}"
-      register: r_scripts_files_count_cache_stats
-
-    - name: count | Stat scripts size cache
-      stat:
-        path: "{{ r_scripts_size_cache_file }}"
-      register: r_scripts_size_cache_stats
-
   delegate_to: localhost
 
 - block:
@@ -36,30 +26,14 @@
         name: r_size_cache
       when: r_size_cache_stats.stat.exists
 
-    - name: count | Load scripts file count cache
-      include_vars:
-        file: "{{ r_scripts_files_count_cache }}"
-        name: r_scripts_files_count_cache
-      when: r_scripts_files_count_cache_stats.stat.exists
-
-    - name: count | Load scripts size cache
-      include_vars:
-        file: "{{ r_scripts_size_cache }}"
-        name: r_scripts_size_cache
-      when: r_scripts_size_cache_stats.stat.exists
-
     - name: count | Loaded file count cache
       debug:
         var: r_files_count_cache
+
     - name: count | Loaded size cache
       debug:
         var: r_size_cache
-    - name: count | Loaded scripts file count cache
-      debug:
-        var: r_scripts_files_count_cache
-    - name: count | Loaded scripts size cache
-      debug:
-        var: r_scripts_size_cache
+
   tags:
     - count_files_cache
 
@@ -93,25 +67,29 @@
   when: r_count_files
 
 - block:
-    # If destination does not exist, file count will be 0.
+    # FIXME: I assume here, that name is unique!
+    # For regular backup points `dst` must be specified. For backup scripts
+    # `dst` is assumed to be equal to name.
     - name: count | Count files in backups
       shell: >-
         {{ '/usr/bin/find '
-              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst ) | quote
+              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst | default(item.name) )
+                | quote
               + '| wc -l' }}
       register: r_files_count_raw
       when: r_files_count_cache[item.name] is not defined
-      loop: "{{ r_backups }}"
+      loop: "{{ r_backups + r_backup_scripts }}"
       #changed_when: false
 
     - name: count | Count size of backups
       command: >-
         {{  '/usr/bin/du -s -b '
-              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst ) | quote
+              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst | default(item.name) )
+                | quote
         }}
       register: r_size_raw
       when: r_size_cache[item.name] is not defined
-      loop: "{{ r_backups }}"
+      loop: "{{ r_backups + r_backup_scripts }}"
       #changed_when: false
 
   delegate_to: "{{ backup_server }}"
@@ -128,7 +106,7 @@
                 })
           }}
       loop: >-
-        {{ r_backups | zip(r_files_count_raw.results) | list }}
+        {{ ( r_backups + r_backup_scripts ) | zip(r_files_count_raw.results) | list }}
 
     - name: count | Rebuild size to dictionary
       set_fact:
@@ -141,7 +119,7 @@
                 })
           }}
       loop: >-
-        {{ r_backups | zip(r_size_raw.results) | list }}
+        {{ ( r_backups + r_backup_scripts ) | zip(r_size_raw.results) | list }}
 
 - block:
     - name: count | Ensure directory for caching rsnapshot file count data exist

@@ -80,6 +80,11 @@ r_files_count_cache: {}
 r_size_raw: []
 r_size_cache: {}
 
+r_scripts_files_count_raw: []
+r_scripts_files_count_cache: {}
+r_scripts_size_raw: []
+r_scripts_size_cache: {}
+
 # Cache files for calculated file count and sizes.
 r_cache_dir: "{{ playbook_dir + '/rsnapshot_cache' }}"
 r_files_count_cache_file: >-
@@ -87,8 +92,8 @@ r_files_count_cache_file: >-
 r_size_cache_file: >-
   {{ r_cache_dir + '/' + inventory_hostname + '-size.yml' }}
 
-r_scripts_files_count_cache: >-
+r_scripts_files_count_cache_file: >-
   {{ r_cache_dir + '/' + inventory_hostname + '-scripts-files_count.yml' }}
-r_scripts_size_cache: >-
+r_scripts_size_cache_file: >-
   {{ r_cache_dir + '/' + inventory_hostname + '-scripts-size.yml' }}
 

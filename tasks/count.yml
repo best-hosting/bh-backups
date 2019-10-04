@@ -3,29 +3,28 @@
 - block:
     - name: count | Stat file count cache
       stat:
-        path: "{{ item }}"
-      register: r_cache_stats_list
-      loop:
-        - 'r_files_count_cache_file'
-        - 'r_size_cache_file'
-        - 'r_scripts_files_count_cache_file'
-        - 'r_scripts_size_cache_file'
-    - name: count | Rebuild cache stats to dictionary
-      set_fact:
-        r_cache_stats: >-
-          {{ r_cache_stats_list.results | items2dict(key_name='item', value_name='stat') }}
+        path: "{{ r_files_count_cache_file }}"
+      register: r_files_count_cache_stats
 
+    - name: count | Stat size cache
+      stat:
+        path: "{{ r_size_cache_file }}"
+      register: r_size_cache_stats
+
+  delegate_to: localhost
+
+- block:
     - name: count | Load file count cache
       include_vars:
         file: "{{ r_files_count_cache_file }}"
         name: r_files_count_cache
-      when: r_cache_stats['r_files_count_cache_file'].exists
+      when: r_files_count_cache_stats.stat.exists
 
     - name: count | Load size cache
       include_vars:
         file: "{{ r_size_cache_file }}"
         name: r_size_cache
-      when: r_cache_stats['r_size_cache_file'].exists
+      when: r_size_cache_stats.stat.exists
 
       #    - name: count | Load scripts file count cache
       #      include_vars:
@@ -42,6 +41,15 @@
     - name: count | Loaded file count cache
       debug:
         var: r_files_count_cache
+    - name: count | Loaded size cache
+      debug:
+        var: r_size_cache
+    - name: count | Loaded scripts file count cache
+      debug:
+        var: r_scripts_files_count_cache
+    - name: count | Loaded scripts size cache
+      debug:
+        var: r_scripts_size_cache
   tags:
     - count_files_cache
 
@@ -63,10 +71,6 @@
         r_interval_stats: >-
           {{ r_interval_stats_list.results | items2dict(key_name='item', value_name='stat') }}
 
-    - name: count | Huy
-      debug:
-        var: r_interval_stats
-
     - name: count | Determine count interval
       set_fact:
         r_count_interval: >-
@@ -85,8 +89,8 @@
         {{ '/usr/bin/find '
               + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst ) | quote
               + '| wc -l' }}
-      when: r_files_count_cache[item.name] is not defined
       register: r_files_count_raw
+      when: r_files_count_cache[item.name] is not defined
       loop: "{{ r_backups }}"
       #changed_when: false
 
@@ -96,6 +100,7 @@
               + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst ) | quote
         }}
       register: r_size_raw
+      when: r_size_cache[item.name] is not defined
       loop: "{{ r_backups }}"
       #changed_when: false
 
@@ -103,30 +108,40 @@
   when: r_count_files
 
 - block:
-    - name: count | Rebuild
+    - name: count | Rebuild file count to dictionary
       set_fact:
         r_files_count: >-
           {{ r_files_count | combine(
                 { item.0.name :
-                    { 'file_count' : r_files_count_cache[item.0.name] | default(item.1.stdout) | int
-                    }
-                })
-          }}
-        r_size: >-
-          {{ r_size | combine(
-                { item.0.name :
-                    { 'size'  : r_size_cache[item.0.name] | default(item.2.stdout)
-                                  | regex_search('^[0-9]+(?=\t)') | int
+                    { 'file_count' : r_files_count_cache[item.0.name]['file_count'] | default(
+                                        item.1.stdout | default(0))
                     }
                 })
           }}
       loop: >-
-        {{ r_backups | zip(r_files_count_raw.results, r_size_raw.results) | list }}
-
-    - name: Pizda
+        {{ r_backups | zip(r_files_count_raw.results) | list }}
+    - name: count | File count info
       debug:
         var: r_files_count
-    - name: Pizda2
+
+    - name: hh
+      debug:
+        var: r_size_raw
+    - name: count | Rebuild size to dictionary
+      set_fact:
+        r_size: >-
+          {{ r_size | combine(
+                { item.0.name :
+                    { 'size'  : r_size_cache[item.0.name]['size'] | default(
+                                    item.1.stdout | default("0")
+                                      | regex_search('^[0-9]+(?=\t)') | int
+                                  )
+                    }
+                })
+          }}
+      loop: >-
+        {{ r_backups | zip(r_size_raw.results) | list }}
+    - name: count | Size info
       debug:
         var: r_size
 
@@ -140,7 +155,7 @@
       register: r_backup_scripts_files_count
       delegate_to: "{{ backup_server }}"
       loop: "{{ r_backup_scripts }}"
-      changed_when: false
+      #changed_when: false
 
     - name: count | Count size of backup scripts dirs
       command: >-
@@ -150,7 +165,7 @@
       register: r_backup_scripts_size
       delegate_to: "{{ backup_server }}"
       loop: "{{ r_backup_scripts }}"
-      changed_when: false
+      #changed_when: false
 
   when: r_count_files
 
@@ -160,10 +175,26 @@
         mode: '0700'
         path:  "{{ r_cache_dir }}"
         state: directory
-    - name: count | Save rsnapshot file count to local db
+
+    - name: count | Save file count locally
       copy:
         content:  "{{ r_files_count | to_yaml }}"
         dest:     "{{ r_files_count_cache_file }}"
+
+    - name: count | Save size locally
+      copy:
+        content:  "{{ r_size | to_yaml }}"
+        dest:     "{{ r_size_cache_file }}"
+
+    - name: count | Save scripts file count locally
+      copy:
+        content:  "{{ r_scripts_files_count | to_yaml }}"
+        dest:     "{{ r_scripts_files_count_cache_file }}"
+
+    - name: count | Save scripts size locally
+      copy:
+        content:  "{{ r_scripts_size | to_yaml }}"
+        dest:     "{{ r_scripts_size_cache_file }}"
 
   delegate_to: localhost
 

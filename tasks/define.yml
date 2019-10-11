@@ -36,7 +36,6 @@
     - name: define | Backup points
       debug:
         var: r_backups2
-
     - name: define | Backup scripts
       debug:
         var: r_backup_scripts2

@@ -9,7 +9,7 @@
       tags:
         - always
 
-    - name:
+    - name: Count files and size in backups
       include_tasks:
         file: 'tasks/count.yml'
         apply:

@@ -1,17 +1,19 @@
 ---
 
 - block:
-    - name: count | Stat file count cache
+    - name: count | Stat file count cache file
       stat:
         path: "{{ r_files_count_cache_file }}"
       register: r_files_count_cache_stats
 
-    - name: count | Stat size cache
+    - name: count | Stat size cache file
       stat:
         path: "{{ r_size_cache_file }}"
       register: r_size_cache_stats
 
   delegate_to: localhost
+  tags:
+    - count_files_cache
 
 - block:
     - name: count | Load file count cache
@@ -29,7 +31,6 @@
     - name: count | Loaded file count cache
       debug:
         var: r_files_count_cache
-
     - name: count | Loaded size cache
       debug:
         var: r_size_cache

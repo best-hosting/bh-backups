@@ -59,3 +59,13 @@ r_monthly:
 # To recalculate values, remove cache file.
 r_count_files: yes
 
+# Percentage.
+warn_files_count: 80
+crit_files_count: 60
+warn_files_count_diff: 10000
+warn_files_count_diff: 40000
+
+warn_size: 80
+crit_size: 60
+warn_size_diff: 10737418240
+warn_size_diff: 42949672960

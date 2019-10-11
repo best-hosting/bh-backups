@@ -10,14 +10,10 @@
         - always
 
     - name: Count files and size in backups
-      include_tasks:
-        file: 'tasks/count.yml'
-        apply:
-          tags:
-            - 'count_files'
+      import_tasks: 'tasks/count.yml'
       tags:
+        - always
         - count_files
-        - count_huy
 
     - name: Define internal variables
       import_tasks: tasks/define.yml

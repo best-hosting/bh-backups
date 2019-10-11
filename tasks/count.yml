@@ -73,10 +73,12 @@
     # `dst` is assumed to be equal to name.
     - name: count | Count files in backups
       shell: >-
-        {{ '/usr/bin/find '
+        {{ 'set -o pipefail; /usr/bin/find '
               + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst | default(item.name) )
                 | quote
               + '| wc -l' }}
+      args:
+        executable: '/bin/bash'
       register: r_files_count_raw
       when: r_files_count_cache[item.name] is not defined
       loop: "{{ r_backups + r_backup_scripts }}"

@@ -122,22 +122,3 @@
       loop: >-
         {{ ( r_backups + r_backup_scripts ) | zip(r_size_raw.results) | list }}
 
-- block:
-    - name: count | Ensure directory for caching rsnapshot file count data exist
-      file:
-        mode: '0700'
-        path:  "{{ r_cache_dir }}"
-        state: directory
-
-    - name: count | Save file count locally
-      copy:
-        content:  "{{ r_files_count | to_yaml }}"
-        dest:     "{{ r_files_count_cache_file }}"
-
-    - name: count | Save size locally
-      copy:
-        content:  "{{ r_size | to_yaml }}"
-        dest:     "{{ r_size_cache_file }}"
-
-  delegate_to: localhost
-

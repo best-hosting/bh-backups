@@ -33,10 +33,10 @@
           }}
       loop: "{{ r_backup_scripts }}"
 
-    - name: define | Backup points
+    - name: define | Show backup points
       debug:
         var: r_backups2
-    - name: define | Backup scripts
+    - name: define | Show backup scripts
       debug:
         var: r_backup_scripts2
 

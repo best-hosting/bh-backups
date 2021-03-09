@@ -83,6 +83,7 @@
       register: r_files_count_raw
       when: r_files_count_cache[item.name] is not defined or r_files_count_cache[item.name] == 0
       loop: "{{ r_backups + r_backup_scripts }}"
+      check_mode: no
       #changed_when: false
 
     - name: count | Count size of backups
@@ -94,6 +95,7 @@
       register: r_size_raw
       when: r_size_cache[item.name] is not defined or r_size_cache[item.name] == 0
       loop: "{{ r_backups + r_backup_scripts }}"
+      check_mode: no
       #changed_when: false
 
   delegate_to: "{{ backup_server }}"

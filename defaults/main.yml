@@ -44,7 +44,7 @@ bh_pgsql_script: "{{ role_path + '/files/pgsql.sh' }}"
 db_user: "{{ backup_server }}"
 
 # Default database user password.
-db_password: "{{ lookup('file', 'backup_mysql.password') }}"
+db_password: "{{ lookup('file', 'backup_mysql_' + inventory_hostname + '.password') }}"
 
 r_sync:
   hour: 2

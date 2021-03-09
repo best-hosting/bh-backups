@@ -44,9 +44,10 @@
         path: "{{ r_snapshot_root + '/' + item }}"
       loop: >-
         {{  ( ['daily']   | product([0, 1, 2])  | list
-            + ['weekly']  | product([0])           | list
-            + ['monthly'] | product([0])           | list
+            + ['weekly']  | product([0])        | list
+            + ['monthly'] | product([0])        | list
             ) | map('join', '.') | list
+            + ['.sync']
         }}
       register: r_interval_stats_list
       delegate_to: "{{ backup_server }}"
@@ -61,8 +62,8 @@
         r_count_interval: >-
           {{ 'daily.1' if r_interval_stats['daily.1'].exists
                 else 'daily.0' if r_interval_stats['daily.0'].exists
-                else '.sync' if r_interval_stats['sync'].exists
-                else 'huy'
+                else '.sync' if r_interval_stats['.sync'].exists
+                else ''
           }}
 
   when: r_count_files
@@ -96,7 +97,7 @@
       #changed_when: false
 
   delegate_to: "{{ backup_server }}"
-  when: r_count_files
+  when: r_count_files and r_count_interval != ''
 
 - block:
     - name: count | Rebuild file count to dictionary

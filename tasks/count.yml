@@ -107,8 +107,9 @@
         r_files_count: >-
           {{ r_files_count | combine(
                 { item.0.name :
-                    r_files_count_cache[item.0.name] | default(
-                      item.1.stdout | default(0) | int)
+                    item.1.stdout | int
+                        if item.1.stdout is defined
+                      else r_files_count_cache[item.0.name] | default(0)
                 })
           }}
       loop: >-
@@ -119,9 +120,9 @@
         r_size: >-
           {{ r_size | combine(
                 { item.0.name :
-                    r_size_cache[item.0.name] | default(
-                        item.1.stdout | default("0") | regex_search('^[0-9]+(?=\t)') | int
-                      )
+                    item.1.stdout | regex_search('^[0-9]+(?=\t)') | int
+                        if item.1.stdout is defined
+                      else r_size_cache[item.0.name] | default(0)
                 })
           }}
       loop: >-

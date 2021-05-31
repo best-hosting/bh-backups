@@ -50,7 +50,7 @@
       find:
         paths: '/etc/ssh'
         patterns: '^ssh_host_[^/]+_key\.pub$'
-        use_regex:  'yes'
+        use_regex:  true
         file_type:  'file'
       register: ssh_host_keys_found
 
@@ -72,7 +72,7 @@
       find:
         paths:      "{{ ssh_pubkeys_backup_server_dir }}"
         patterns:   '^id_rsa.pub$'
-        use_regex:  'yes'
+        use_regex:  true
         file_type:  'file'
       register: ssh_pubkeys_backup_server_found
 
@@ -80,7 +80,7 @@
       find:
         paths: "{{ ssh_host_pubkeys_db_dir }}"
         patterns: '^ssh_host_[^/]+_key\.pub$'
-        use_regex:  'yes'
+        use_regex:  true
         file_type:  'file'
       register: ssh_host_keys_local_db
 

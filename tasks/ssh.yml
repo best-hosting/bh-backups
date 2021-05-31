@@ -57,6 +57,8 @@
     - name: ssh | Obtain ssh host public keys
       synchronize:
         mode: pull
+        archive: no
+        checksum: yes
         recursive: yes
         delete: yes
         src: "{{ item.path }}"

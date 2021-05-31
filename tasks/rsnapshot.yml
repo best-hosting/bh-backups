@@ -104,31 +104,31 @@
           /usr/bin/rsnapshot -c {{ rsnapshot_conf }} daily
         state: present
         user: 'root'
-        cron_file: "rsnapshot-{{ inventory_hostname }}"
+        cron_file: "{{ rsnapshot_cron_file }}"
 
     - name: rsnapshot | weekly
       cron:
         name: "{{ inventory_hostname }} weekly"
         hour  : "{{ r_weekly.hour }}"
         minute: "{{ r_weekly.minute }}"
-        weekday: 0
+        weekday: "0"
         job: >-
           /usr/bin/rsnapshot -c {{ rsnapshot_conf }} weekly
         state: present
         user: 'root'
-        cron_file: "rsnapshot-{{ inventory_hostname }}"
+        cron_file: "{{ rsnapshot_cron_file }}"
 
     - name: rsnapshot | monthly
       cron:
         name: "{{ inventory_hostname }} monthly"
         hour  : "{{ r_monthly.hour }}"
         minute: "{{ r_monthly.minute }}"
-        day: 1
+        day: "1"
         job: >-
           /usr/bin/rsnapshot -c {{ rsnapshot_conf }} monthly
         state: present
         user: 'root'
-        cron_file: "rsnapshot-{{ inventory_hostname }}"
+        cron_file: "{{ rsnapshot_cron_file }}"
 
   delegate_to: "{{ backup_server }}"
   tags:

@@ -23,10 +23,11 @@
               User {{ ansible_user_id }}
           {% endfor %}
 
-    - name: ssh | (backup_server) Add hosts to ssh config
+    - name: ssh | (backup_server) Add or remove host from ssh config
       blockinfile:
         block: "{{ r_ssh_hosts }}"
-        state:  present
+        state: >-
+          {{ 'present' if run_mode != 'uninstall' else 'absent' }}
         marker: "# {mark} ANSIBLE MANAGED BLOCK bh-backups of {{ inventory_hostname }}"
         owner:  "{{ backup_user }}"
         mode:   '0600'
@@ -55,7 +56,7 @@
         file_type:  'file'
       register: ssh_host_keys_found
 
-    - name: ssh | Obtain ssh host public keys
+    - name: ssh | (local) Obtain ssh host public keys
       synchronize:
         mode: pull
         archive: no
@@ -101,7 +102,7 @@
     - 'ssh_host_access'
 
 - block:
-    - name: ssh | (backup_server) Add to backup server's known_hosts
+    - name: ssh | (backup_server) Add host to backup server's known_hosts
       known_hosts:
         name: "{{ ansible_host }}"
         key:  "{{ ansible_host + ' ' + item.keytype + ' ' + item.key }}"
@@ -109,10 +110,11 @@
       loop: "{{ ssh_host_keys }}"
       delegate_to: "{{ backup_server }}"
 
-    - name: ssh | Add backup server to authorized_keys
+    - name: ssh | Add or remove backup server user from authorized_keys
       authorized_key:
         user:   "{{ ansible_user_id }}"
-        state:  'present'
+        state: >-
+          {{ 'present' if run_mode != 'uninstall' else 'absent' }}
         key:    "{{ lookup('file', item.path) }}"
       loop: "{{ ssh_pubkeys_backup_server_found.files }}"
   tags:

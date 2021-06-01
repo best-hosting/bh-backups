@@ -14,6 +14,15 @@
         host:     'localhost'
         priv:     '*.*:SELECT,SUPER,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER'
         state:    present
+      when: run_mode != 'uninstall'
+      loop: "{{ r_backup_scripts_mysql }}"
+
+    - name: db | Or delete MySQL user of backup server
+      mysql_user:
+        name:     "{{ item.user }}"
+        host:     'localhost'
+        state:    absent
+      when: run_mode == 'uninstall'
       loop: "{{ r_backup_scripts_mysql }}"
 
     - name: db | Add MySQL backup scripts to file list
@@ -69,6 +78,8 @@
       become: yes
       become_user: 'postgres'
       loop: "{{ r_backup_scripts_pgsql }}"
+
+    # FIXME: Add remove task for postgresql too.
 
     - name: db | Add PostgreSQL backup scripts to file list
       set_fact:

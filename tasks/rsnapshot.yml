@@ -85,6 +85,18 @@
         default_data_files: "{{ r_data_files }}"
         default_data_templates: "{{ r_data_templates }}"
         default_file_dest: 'huy'
+      when: run_mode != 'uninstall'
+      tags:
+        - 'rsnapshot_config'
+        - 'rsnapshot_filters'
+        - 'rsnapshot_db'
+
+    - name: rsnapshot | Or delete config files
+      file:
+        name: "{{ item['dest'] }}"
+        state: absent
+      loop: "{{ r_data_files + r_data_templates }}"
+      when: run_mode == 'uninstall'
       tags:
         - 'rsnapshot_config'
         - 'rsnapshot_filters'
@@ -130,8 +142,18 @@
         user: 'root'
         cron_file: "{{ rsnapshot_cron_file }}"
 
+  when: run_mode != 'uninstall'
   delegate_to: "{{ backup_server }}"
   tags:
     - 'rsnapshot_cron'
     - 'rsnapshot_config'
 
+- name: rsnapshot | Or delete cron files
+  file:
+    name: "{{ rsnapshot_cron_file }}"
+    state: absent
+  when: run_mode == 'uninstall'
+  delegate_to: "{{ backup_server }}"
+  tags:
+    - 'rsnapshot_cron'
+    - 'rsnapshot_config'

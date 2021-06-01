@@ -70,7 +70,7 @@ db_postgresql: >-
 rsnapshot_conf: "{{ install_path + '/rsnapshot.' + inventory_hostname + '.conf' }}"
 
 rsnapshot_cron_file: >-
-  {{ 'rsnapshot-' + inventory_hostname | regex_replace('[^a-zA-Z0-9_-]', '_') }}
+  {{ '/etc/cron.d/rsnapshot-' + inventory_hostname | regex_replace('[^a-zA-Z0-9_-]', '_') }}
 
 r_files_count: {}
 r_size: {}

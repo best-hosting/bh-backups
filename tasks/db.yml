@@ -7,7 +7,7 @@
           - 'python-mysqldb'
         state: 'present'
 
-    - name: db | Add MySQL user to backup server
+    - name: db | Add MySQL user for backup server
       mysql_user:
         name:     "{{ item.user }}"
         password: "{{ item.password }}"
@@ -60,7 +60,7 @@
           - 'python-psycopg2'
         state: 'present'
 
-    - name: db | Add PostgreSQL user to backup server
+    - name: db | Add PostgreSQL user for backup server
       postgresql_user:
         name:     "{{ item.user }}"
         password: "{{ item.password }}"

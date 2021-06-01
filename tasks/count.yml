@@ -52,7 +52,7 @@
       register: r_interval_stats_list
       delegate_to: "{{ backup_server }}"
 
-    - name: Rebuild to dict
+    - name: count | Rebuild to dict
       set_fact:
         r_interval_stats: >-
           {{ r_interval_stats_list.results | items2dict(key_name='item', value_name='stat') }}

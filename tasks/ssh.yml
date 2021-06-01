@@ -9,7 +9,7 @@
       set_fact:
         r_ssh_hosts: >
           {{  [{ 'ssh_host':    item.install | basename | splitext | first
-              , 'ssh_hostname': item.ssh_hostname | default(ansible_host)
+               , 'ssh_hostname': item.ssh_hostname | default(ansible_host)
               }] + r_ssh_hosts
           }}
       loop: "{{ r_backup_scripts2 }}"
@@ -28,7 +28,7 @@
         block: "{{ r_ssh_hosts }}"
         state: >-
           {{ 'present' if run_mode != 'uninstall' else 'absent' }}
-        marker: "# {mark} ANSIBLE MANAGED BLOCK bh-backups of {{ inventory_hostname }}"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK bh-backups of {{ host_id }}"
         owner:  "{{ backup_user }}"
         mode:   '0600'
         path: >-

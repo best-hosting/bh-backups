@@ -1,7 +1,13 @@
 ---
+
+# Cron files disallow some symbols in filenames, thus i use this normalized id
+# instead of 'inventory_hostname' everywhere too.
+host_id: >-
+  {{ inventory_hostname | regex_replace('[^a-zA-Z0-9_-]', '_') }}
+
 # Current server snapshot root. Does NOT include trailing slash!
 r_snapshot_root: >-
-  {{ hostvars[backup_server]['r_backup_root'] + '/' + inventory_hostname }}
+  {{ hostvars[backup_server]['r_backup_root'] + '/' + host_id }}
 
 # vars file for bh-backups
 rsync_filters_dir: "{{ install_path + '/rsnapshot.d' }}"
@@ -15,10 +21,10 @@ r_backup_script_confs: {}
 
 # By default, at least ssh config entry for current host is required.
 r_ssh_hosts:
-  - ssh_host: "{{ inventory_hostname }}"
+  - ssh_host: "{{ host_id }}"
     ssh_hostname: "{{ ansible_host }}"
 
-ssh_host_pubkeys_db_dir: "{{ playbook_dir + '/ssh_host_pubkeys/' + inventory_hostname }}"
+ssh_host_pubkeys_db_dir: "{{ playbook_dir + '/ssh_host_pubkeys/' + host_id }}"
 ssh_host_keys: []
 
 # I _need_ gather facts run against backup_server, to initialize these
@@ -30,7 +36,7 @@ ssh_pubkeys_db_dir: "{{ playbook_dir + '/ssh_pubkeys' }}"
 ssh_pubkeys_backup_server_dir: >-
   {{ ssh_pubkeys_db_dir + '/' + backup_server + '/' + backup_user }}
 ssh_pubkeys_dir: >-
-  {{ ssh_pubkeys_db_dir + '/' + inventory_hostname + '/' + ansible_user_id }}
+  {{ ssh_pubkeys_db_dir + '/' + host_id + '/' + ansible_user_id }}
 
 rsnapshot_pkgs:
 - 'rsnapshot'
@@ -67,10 +73,10 @@ db_postgresql: >-
       | list | length > 0
   }}
 
-rsnapshot_conf: "{{ install_path + '/rsnapshot.' + inventory_hostname + '.conf' }}"
+rsnapshot_conf: "{{ install_path + '/rsnapshot.' + host_id + '.conf' }}"
 
 rsnapshot_cron_file: >-
-  {{ '/etc/cron.d/rsnapshot-' + inventory_hostname | regex_replace('[^a-zA-Z0-9_-]', '_') }}
+  {{ '/etc/cron.d/rsnapshot-' + host_id }}
 
 r_files_count: {}
 r_size: {}
@@ -91,12 +97,12 @@ r_scripts_size_cache: {}
 # Cache files for calculated file count and sizes.
 r_cache_dir: "{{ playbook_dir + '/rsnapshot_cache' }}"
 r_files_count_cache_file: >-
-  {{ r_cache_dir + '/' + inventory_hostname + '-files_count.yml' }}
+  {{ r_cache_dir + '/' + host_id + '-files_count.yml' }}
 r_size_cache_file: >-
-  {{ r_cache_dir + '/' + inventory_hostname + '-size.yml' }}
+  {{ r_cache_dir + '/' + host_id + '-size.yml' }}
 
 r_scripts_files_count_cache_file: >-
-  {{ r_cache_dir + '/' + inventory_hostname + '-scripts-files_count.yml' }}
+  {{ r_cache_dir + '/' + host_id + '-scripts-files_count.yml' }}
 r_scripts_size_cache_file: >-
-  {{ r_cache_dir + '/' + inventory_hostname + '-scripts-size.yml' }}
+  {{ r_cache_dir + '/' + host_id + '-scripts-size.yml' }}
 

@@ -8,7 +8,7 @@
               { 'full_dst': item.dst + '/'
               , 'alias'   : item.dst | replace('/', '_')
               , 'full_src':
-                  ansible_user_id + '@' + inventory_hostname + ':'
+                  ansible_user_id + '@' + host_id + ':'
                   + ( item.src if item.src == '/' else item.src + '/././' )
               , 'file_count': r_files_count[item.name]
               , 'size'      : r_size[item.name]
@@ -25,7 +25,7 @@
               , 'user'    : item.user     | default(db_user) + '-' + item.name
               , 'password': item.password | default(db_password)
               , 'install' : rsync_filters_dir + '/'
-                              + inventory_hostname + '-' + item.name
+                              + host_id + '-' + item.name
                               + item.script | splitext | last
               , 'file_count': r_files_count[item.name]
               , 'size'      : r_size[item.name]

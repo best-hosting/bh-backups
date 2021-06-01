@@ -27,6 +27,7 @@
       blockinfile:
         block: "{{ r_ssh_hosts }}"
         state:  present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK bh-backups of {{ inventory_hostname }}"
         owner:  "{{ backup_user }}"
         mode:   '0600'
         path: >-

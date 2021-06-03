@@ -128,7 +128,7 @@
         {{ ( r_backups2 + r_backup_scripts2 ) | zip(r_size_raw.results) | list }}
 
 - block:
-    - name: count | Ensure directory for caching rsnapshot file count data exist
+    - name: count | Ensure directory for rsnapshot cache exists
       file:
         mode: '0700'
         path:  "{{ r_cache_dir }}"

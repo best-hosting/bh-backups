@@ -2,24 +2,16 @@
 # defaults file for bh-backups
 install_path: '/etc'
 
-bh_root_rsync_filter: |
-  # BH / filter.
-
-  . {{ rsync_filters_libdir }}/ossec.rsync-filter
-  . {{ rsync_filters_libdir }}/ispmgr.rsync-filter
-
-  . {{ rsync_filters_libdir }}/root-base.rsync-filter
-
-bh_home_rsync_filter: |
-  # BH filter for user's data.
-
-  # Ignore web logs.
-  - /httpd-logs/*
-  - /*/data/logs/*
-
-  . {{ rsync_filters_libdir }}/home-base.rsync-filter
+default_rsync_filters: >-
+  {{
+      { 'root': lookup('file', 'templates/default_root_rsync_filter.yml')
+      , 'home': lookup('file', 'templates/default_home_rsync_filter.yml')
+      }
+  }}
 
 # Backup points definition.
+# 'dst' - required. Destination directory name.
+# 'src' - required. Source directory name.
 #r_backups:
 #  - name: 'root'
 #    src:  '/'

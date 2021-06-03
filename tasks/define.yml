@@ -1,39 +1,49 @@
 ---
 
+# FIXME: Rename r_backups to backup_points.
 - block:
     - name: define | Define internal r_backups dictionary
       set_fact:
         r_backups2: >-
-          {{ r_backups2 + [item | combine(
-              { 'name'    : item_name
-              , 'full_dst': item_dst + '/'
-              , 'full_src':
-                  ansible_user_id + '@' + host_id + ':'
-                  + ( item.src if item.src == '/' else item.src + '/././' )
-              , 'file_count': r_files_count[item_name]
-              , 'size'      : r_size[item_name]
-              })]
+          {{ r_backups2
+              + [ { 'name'    : item_name
+                  , 'full_dst': item.dst + '/'
+                  , 'full_src':
+                      ansible_user_id + '@' + host_id + ':'
+                      + ( item.src if item.src == '/' else item.src + '/././' )
+                  , 'rsync_filter' : item.rsync_filter | default(item_rsync_filter)
+                  }
+                ]
           }}
       vars:
         item_name: >-
           {{ item.name | default(item.dst | replace('/', '_')) }}
+        # FIXME: Do i really need to store rsync filter in variable? Or just
+        # pass path to file?
+        item_rsync_filter: >-
+          {{ item.rsync_filter if item.rsync_filter is defined
+              else default_rsync_filters[item.rsync_filter_name]
+                if item.rsync_filter_name is defined
+                else default_rsync_filters[item_name]
+          }}
       loop: "{{ r_backups }}"
 
     - name: define | Define internal r_backup_scripts dictionary
       set_fact:
         r_backup_scripts2: >-
           {{ r_backup_scripts2 + [item | combine(
-              { 'dst'     : item.name
-              , 'alias'   : item.name | replace('/', '_')
-              , 'user'    : item.user     | default(db_user) + '-' + item.name
+              { 'name'    : item_name
+              , 'dst'     : item_name
+              , 'user'    : item.user     | default(db_user) + '-' + item_name
               , 'password': item.password | default(db_password)
               , 'install' : rsync_filters_dir + '/'
-                              + host_id + '-' + item.name
+                              + host_id + '-' + item_name
                               + item.script | splitext | last
-              , 'file_count': r_files_count[item.name]
-              , 'size'      : r_size[item.name]
               })]
           }}
+      vars:
+        item_name: >-
+          {{ item.name | default(item.dst | replace('/', '_')) }}
       loop: "{{ r_backup_scripts }}"
 
     - name: define | Show backup points
@@ -81,22 +91,22 @@
 # E.g. if `dst` was undefined for backup point, incorrect file count and size
 # may be computed, but define task above will fail and prevent that data to be
 # written to cache.
-- block:
-    - name: count | Ensure directory for caching rsnapshot file count data exist
-      file:
-        mode: '0700'
-        path:  "{{ r_cache_dir }}"
-        state: directory
-
-    - name: count | Save file count locally
-      copy:
-        content:  "{{ r_files_count | to_yaml }}"
-        dest:     "{{ r_files_count_cache_file }}"
-
-    - name: count | Save size locally
-      copy:
-        content:  "{{ r_size | to_yaml }}"
-        dest:     "{{ r_size_cache_file }}"
-
-  delegate_to: localhost
+#- block:
+#    - name: count | Ensure directory for caching rsnapshot file count data exist
+#      file:
+#        mode: '0700'
+#        path:  "{{ r_cache_dir }}"
+#        state: directory
+#
+#    - name: count | Save file count locally
+#      copy:
+#        content:  "{{ r_files_count | to_yaml }}"
+#        dest:     "{{ r_files_count_cache_file }}"
+#
+#    - name: count | Save size locally
+#      copy:
+#        content:  "{{ r_size | to_yaml }}"
+#        dest:     "{{ r_size_cache_file }}"
+#
+#  delegate_to: localhost
 

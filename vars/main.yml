@@ -61,14 +61,14 @@ r_backup_scripts_pgsql: []
 
 # Whether to set up backups of mysql. Guessed from backup scripts.
 db_mysql: >-
-  {{ r_backup_scripts
+  {{ r_backup_scripts2
       | selectattr('name', 'equalto', 'mysql')
       | list | length > 0
   }}
 
 # Whether to set up backups of postgresql. Guessed from backup scripts.
 db_postgresql: >-
-  {{ r_backup_scripts
+  {{ r_backup_scripts2
       | selectattr('name', 'equalto', 'pgsql')
       | list | length > 0
   }}

@@ -31,15 +31,17 @@
     - name: define | Define internal r_backup_scripts dictionary
       set_fact:
         r_backup_scripts2: >-
-          {{ r_backup_scripts2 + [item | combine(
-              { 'name'    : item_name
-              , 'dst'     : item_name
-              , 'user'    : item.user     | default(db_user) + '-' + item_name
-              , 'password': item.password | default(db_password)
-              , 'install' : rsync_filters_dir + '/'
-                              + host_id + '-' + item_name
-                              + item.script | splitext | last
-              })]
+          {{ r_backup_scripts2
+              + [ { 'name'    : item_name
+                  , 'dst'     : item_name
+                  , 'script'  : item.script
+                  , 'user'    : item.user     | default(db_user) + '-' + item_name
+                  , 'password': item.password | default(db_password)
+                  , 'install' : rsync_filters_dir + '/'
+                                  + host_id + '-' + item_name
+                                  + item.script | splitext | last
+                  }
+                ]
           }}
       vars:
         item_name: >-

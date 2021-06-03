@@ -2,6 +2,9 @@
 # defaults file for bh-backups
 install_path: '/etc'
 
+# FIXME: Make 'rsync_filters' consitent with 'script' option: 'script'
+# specifies file name with script, so should 'rsync_filter' do. I also may
+# provide 'script_name' option for choosing default scripts.
 default_rsync_filters: >-
   {{
       { 'root': lookup('file', 'templates/default_root_rsync_filter.yml')

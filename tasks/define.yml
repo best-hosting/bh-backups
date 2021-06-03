@@ -4,8 +4,8 @@
 - block:
     - name: define | Define internal r_backups dictionary
       set_fact:
-        r_backups2: >-
-          {{ r_backups2
+        _backup_points: >-
+          {{ _backup_points
               + [ { 'name'    : item_name
                   , 'full_dst': item.dst + '/'
                   , 'full_src':
@@ -30,8 +30,8 @@
 
     - name: define | Define internal r_backup_scripts dictionary
       set_fact:
-        r_backup_scripts2: >-
-          {{ r_backup_scripts2
+        _backup_scripts: >-
+          {{ _backup_scripts
               + [ { 'name'    : item_name
                   , 'dst'     : item_name
                   , 'script'  : item.script
@@ -72,26 +72,26 @@
 
       vars:
         backup_point_names: >-
-          {{ r_backups2 | map(attribute='name') }}
+          {{ _backup_points | map(attribute='name') }}
         backup_script_names: >-
-          {{ r_backup_scripts2 | map(attribute='name') }}
+          {{ _backup_scripts | map(attribute='name') }}
         identical_names: >-
           {{ backup_point_names | intersect(backup_script_names) }}
         backup_point_duplicates: >-
-          {% for name, items in r_backups2 | groupby('name') if items | length > 1 %}
+          {% for name, items in _backup_points | groupby('name') if items | length > 1 %}
           {{ "'" + items | map(attribute='name') | first + "'" }}
           {%- endfor %}
         backup_script_duplicates: >-
-          {% for name, items in r_backup_scripts2 | groupby('name') if items | length > 1 %}
+          {% for name, items in _backup_scripts | groupby('name') if items | length > 1 %}
           {{ "'" + items | map(attribute='name') | first + "'" }}
           {%- endfor %}
 
     - name: define | Show backup points
       debug:
-        var: r_backups2
+        var: _backup_points
     - name: define | Show backup scripts
       debug:
-        var: r_backup_scripts2
+        var: _backup_scripts
 
     - name: define | Define MySQL scripts dictionary
       set_fact:
@@ -102,7 +102,7 @@
               })]
           }}
       when: item.script == role_path + '/files/mysql.sh'
-      loop: "{{ r_backup_scripts2 }}"
+      loop: "{{ _backup_scripts }}"
 
     - name: define | Define PostgreSQL scripts dictionary
       set_fact:
@@ -115,7 +115,7 @@
               })]
           }}
       when: item.script == role_path + '/files/pgsql.sh'
-      loop: "{{ r_backup_scripts2 }}"
+      loop: "{{ _backup_scripts }}"
 
     - name: define | MySQL backup scripts
       debug:

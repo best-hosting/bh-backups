@@ -12,7 +12,7 @@
                , 'ssh_hostname': item.ssh_hostname | default(ansible_host)
               }] + r_ssh_hosts
           }}
-      loop: "{{ r_backup_scripts2 }}"
+      loop: "{{ _backup_scripts }}"
 
     - name: ssh | Define ssh config content
       set_fact:

@@ -52,23 +52,23 @@ rsnapshot_pkgs:
 - 'postgresql-client'
 
 # Internal r_backups version.
-r_backups2: []
+_backup_points: []
 # Internal r_backup_scripts version.
-r_backup_scripts2: []
+_backup_scripts: []
 
 r_backup_scripts_mysql: []
 r_backup_scripts_pgsql: []
 
 # Whether to set up backups of mysql. Guessed from backup scripts.
 db_mysql: >-
-  {{ r_backup_scripts2
+  {{ _backup_scripts
       | selectattr('name', 'equalto', 'mysql')
       | list | length > 0
   }}
 
 # Whether to set up backups of postgresql. Guessed from backup scripts.
 db_postgresql: >-
-  {{ r_backup_scripts2
+  {{ _backup_scripts
       | selectattr('name', 'equalto', 'pgsql')
       | list | length > 0
   }}

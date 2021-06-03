@@ -26,12 +26,12 @@
                 , 'force' : true
                 }
               ] + r_data_templates }}
-      loop: "{{ r_backups2 }}"
+      loop: "{{ _backup_points }}"
 
     - name: rsnapshot | Define dictionary used in rsync filter template
       set_fact:
         r_backup_filters: >
-          {{ r_backups2 | items2dict(key_name='name', value_name='rsync_filter') }}
+          {{ _backup_points | items2dict(key_name='name', value_name='rsync_filter') }}
 
   tags:
     - 'rsnapshot_filters'

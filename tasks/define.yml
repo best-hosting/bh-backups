@@ -48,6 +48,44 @@
           {{ item.name | default(item.dst | replace('/', '_')) }}
       loop: "{{ r_backup_scripts }}"
 
+    - name: define | Check, that all names are unique
+      assert:
+        that:
+          - "{{ identical_names | length == 0 }}"
+          - "{{ backup_point_duplicates | length == 0 }}"
+          - "{{ backup_script_duplicates | length == 0 }}"
+        fail_msg: |-
+          All names of backup points _and_ backup scripts must be _unique_.
+          {{ backup_point_duplicates }}
+          {% if backup_point_duplicates | length > 0 %}
+          Following duplicate names are found in backup points:
+          {{ backup_point_duplicates }}
+          {% endif %}
+          {% if backup_script_duplicates | length > 0 %}
+          Following duplicate names are found in backup scripts:
+          {{ backup_script_duplicates }}
+          {% endif %}
+          {% if identical_names | length > 0 %}
+          Following names are used both in backup points and backup scripts:
+          {{ identical_names }}
+          {% endif %}
+
+      vars:
+        backup_point_names: >-
+          {{ r_backups2 | map(attribute='name') }}
+        backup_script_names: >-
+          {{ r_backup_scripts2 | map(attribute='name') }}
+        identical_names: >-
+          {{ backup_point_names | intersect(backup_script_names) }}
+        backup_point_duplicates: >-
+          {% for name, items in r_backups2 | groupby('name') if items | length > 1 %}
+          {{ "'" + items | map(attribute='name') | first + "'" }}
+          {%- endfor %}
+        backup_script_duplicates: >-
+          {% for name, items in r_backup_scripts2 | groupby('name') if items | length > 1 %}
+          {{ "'" + items | map(attribute='name') | first + "'" }}
+          {%- endfor %}
+
     - name: define | Show backup points
       debug:
         var: r_backups2

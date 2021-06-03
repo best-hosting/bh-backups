@@ -69,7 +69,6 @@
   when: r_count_files
 
 - block:
-    # FIXME: I assume here, that name is unique!
     # For regular backup points `dst` must be specified. For backup scripts
     # `dst` is assumed to be equal to name.
     - name: count | Count files in backups

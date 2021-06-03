@@ -2,8 +2,13 @@
 # tasks file for bh-backups
 
 - block:
+    - name: Gather facts about host
+      gather_facts:
+      tags:
+        - always
+
     - name: Gather facts about backup server
-      setup:
+      gather_facts:
       delegate_to: "{{ backup_server }}"
       delegate_facts: true
       tags:

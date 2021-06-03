@@ -5,15 +5,18 @@
       set_fact:
         r_backups2: >-
           {{ r_backups2 + [item | combine(
-              { 'full_dst': item.dst + '/'
-              , 'alias'   : item.dst | replace('/', '_')
+              { 'name'    : item_name
+              , 'full_dst': item_dst + '/'
               , 'full_src':
                   ansible_user_id + '@' + host_id + ':'
                   + ( item.src if item.src == '/' else item.src + '/././' )
-              , 'file_count': r_files_count[item.name]
-              , 'size'      : r_size[item.name]
+              , 'file_count': r_files_count[item_name]
+              , 'size'      : r_size[item_name]
               })]
           }}
+      vars:
+        item_name: >-
+          {{ item.name | default(item.dst | replace('/', '_')) }}
       loop: "{{ r_backups }}"
 
     - name: define | Define internal r_backup_scripts dictionary

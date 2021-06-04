@@ -30,6 +30,7 @@ backup_user: "{{ hostvars[backup_server]['ansible_user_id'] }}"
 backup_user_dir: "{{ hostvars[backup_server]['ansible_user_dir'] }}"
 
 ssh_pubkeys_db_dir: "{{ playbook_dir + '/ssh_pubkeys' }}"
+# FIXME: Rename to server_ssh_pubkeys_dir.
 ssh_pubkeys_backup_server_dir: >-
   {{ ssh_pubkeys_db_dir + '/' + backup_server + '/' + backup_user }}
 ssh_pubkeys_dir: >-

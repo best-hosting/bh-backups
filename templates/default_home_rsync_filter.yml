@@ -1,0 +1,7 @@
+# BH filter for user's data.
+
+# Ignore web logs.
+- /httpd-logs/*
+- /*/data/logs/*
+
+. {{ rsync_filters_libdir }}/home-base.rsync-filter

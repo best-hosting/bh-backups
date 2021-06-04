@@ -1,0 +1,6 @@
+# BH / filter.
+
+. {{ rsync_filters_libdir }}/ossec.rsync-filter
+. {{ rsync_filters_libdir }}/ispmgr.rsync-filter
+
+. {{ rsync_filters_libdir }}/root-base.rsync-filter

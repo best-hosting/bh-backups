@@ -1,21 +1,15 @@
 ---
-# defaults file for bh-backups
+# (backup server) Where to install rsnapshot configs.
 install_path: '/etc'
 
-# FIXME: Make 'rsync_filters' consitent with 'script' option: 'script'
-# specifies file name with script, so should 'rsync_filter' do. I also may
-# provide 'script_name' option for choosing default scripts.
-default_rsync_filters: >-
-  {{
-      { 'root': role_path + '/' + 'templates/default_root_rsync_filter.yml'
-      , 'home': role_path + '/' + 'templates/default_home_rsync_filter.yml'
-      }
-  }}
+# (backup server) Root directory for all (not this particular host) backups.
+#r_backup_root: '/var/cache/rsnapshot'
 
 # Backup points definition.
-# 'src' - (required) Name of source directory on backed up server.
-# 'dst' - (required) Name of destination directory on _backup_ server.
-# 'name' - (optional) Id, which will be used to identify this backup point and
+# 'src' - (required) name of source directory on backed up server.
+# 'dst' - (required) name of destination directory (under 'r_snapshot_root')
+# for this backup point on _backup_ server.
+# 'name' - (optional) id, which will be used to identify this backup point and
 # all related resources. Ids should be unique among _both_ backup points and
 # backup scripts. If not specified, it'll be derived automatically from 'dst'.
 # 'rsync_filter_name' - (optional) name of default rsync filter to use.
@@ -25,21 +19,33 @@ default_rsync_filters: >-
 # looked up by backup point 'name'. And if that also fails, task fails.
 #
 # All other attributes are ignored.
-#r_backups:
-#  - name: 'root'
-#    src:  '/'
-#    dst:  'root'
-#    rsync_filter: "{{ bh_root_rsync_filter }}"
+#
+#r_backups: []
 
-bh_mysql_script: "{{ role_path + '/files/mysql.sh' }}"
-bh_pgsql_script: "{{ role_path + '/files/pgsql.sh' }}"
+# Default rsync filters, which may be referenced by name in
+# 'rsync_filter_name' field of 'r_backups'.
+default_rsync_filters: >-
+  {{
+      { 'root': role_path + '/' + 'templates/default_root_rsync_filter.yml'
+      , 'home': role_path + '/' + 'templates/default_home_rsync_filter.yml'
+      }
+  }}
 
-# Backup scripts definition. Name must be unique in single r_backup_scripts
-# list!
-#r_backup_scripts:
-#  - name:   'mysql'
-#    password: 'pass'
-#    script: "{{ bh_mysql_script }}"
+# Backup scripts definition.
+# 'dst' - (required) name of destination directory (under 'r_snapshot_root')
+# for this script on _backup_ server.
+# 'name' - (optional) id, which will be used to identify this backup script and
+# all related resources. Ids should be unique among _both_ backup points and
+# backup scripts. If not specified, it'll be derived automatically from 'dst'.
+# 'script_name' - (optional) name of default backup script to use.
+# 'script' - (optional) path to backup script file. If not specified, default
+# backup script with name 'script_name' will be looked up. If 'script_name' is
+# also not specified, default backup script will be looked up by backup script
+# 'name'. And if that also fails, task fails.
+#
+# All other attributes are ignored.
+#
+#r_backup_scripts: []
 
 # Default backup scripts, which may be referenced by name in 'script_name'
 # field of 'r_backup_scripts'.
@@ -50,14 +56,10 @@ default_backup_scripts: >-
       }
   }}
 
-# Root directory for all backups. This variable must be set for _backup
-# server_.
-#r_backup_root: '/var/cache/rsnapshot'
-
-# Default database user name.
+# Database user name, which backup server will use to backup db.
 db_user: "{{ backup_server }}"
 
-# Default database user password.
+# Database user password.
 db_password: "{{ lookup('file', 'backup_mysql_' + inventory_hostname + '.password') }}"
 
 r_sync:
@@ -84,6 +86,8 @@ crit_size: 60
 warn_size_diff: 10737418240
 crit_size_diff: 42949672960
 
+# FIXME: Rename to "role_name"+run_mode , because different roles may have
+# this variable.
 # Whether to install or uninstall rsnapshot configs. Note, that rsync filter
 # library files, directories and all backup data will _not_ be uninstalled in
 # any case.

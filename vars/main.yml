@@ -21,6 +21,7 @@ r_ssh_hosts:
   - ssh_host: "{{ host_id }}"
     ssh_hostname: "{{ ansible_host }}"
 
+# FIXME: Just store in ssh_pubkeys_dir without user name.
 ssh_host_pubkeys_db_dir: "{{ playbook_dir + '/ssh_host_pubkeys/' + host_id }}"
 ssh_host_keys: []
 

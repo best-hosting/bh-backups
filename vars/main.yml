@@ -16,9 +16,6 @@ rsync_filters_libdir: "{{ install_path + '/rsnapshot.d/lib' }}"
 r_data_templates: []
 r_data_files: []
 
-r_backup_filters: {}
-r_backup_script_confs: {}
-
 # By default, at least ssh config entry for current host is required.
 r_ssh_hosts:
   - ssh_host: "{{ host_id }}"

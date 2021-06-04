@@ -16,22 +16,16 @@
     - 'rsnapshot_db'
 
 - block:
-    - name: rsnapshot | Add rsync filter files to templates list
+    - name: rsnapshot | Add rsync filter files to file list
       set_fact:
-        r_data_templates: >
-          {{  [ { 'src' : role_path + '/templates/per_backup-rsync_filter'
-                , 'dest': rsync_filters_dir + '/'
-                            + host_id + '-' + item.name + '.rsync-filter'
-                , 'r_name': item.name
+        r_data_files: >
+          {{  [ { 'src' : item.rsync_filter
+                , 'dest': item.install
+                , 'mode'  : '0755'
                 , 'force' : true
                 }
-              ] + r_data_templates }}
+              ] + r_data_files }}
       loop: "{{ _backup_points }}"
-
-    - name: rsnapshot | Define dictionary used in rsync filter template
-      set_fact:
-        r_backup_filters: >
-          {{ _backup_points | items2dict(key_name='name', value_name='rsync_filter') }}
 
   tags:
     - 'rsnapshot_filters'

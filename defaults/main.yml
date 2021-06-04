@@ -7,8 +7,8 @@ install_path: '/etc'
 # provide 'script_name' option for choosing default scripts.
 default_rsync_filters: >-
   {{
-      { 'root': lookup('file', 'templates/default_root_rsync_filter.yml')
-      , 'home': lookup('file', 'templates/default_home_rsync_filter.yml')
+      { 'root': role_path + '/' + 'templates/default_root_rsync_filter.yml'
+      , 'home': role_path + '/' + 'templates/default_home_rsync_filter.yml'
       }
   }}
 

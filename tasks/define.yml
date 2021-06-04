@@ -12,6 +12,8 @@
                       ansible_user_id + '@' + host_id + ':'
                       + ( item.src if item.src == '/' else item.src + '/././' )
                   , 'rsync_filter' : item.rsync_filter | default(item_rsync_filter)
+                  , 'install' : rsync_filters_dir + '/'
+                                  + host_id + '-' + item_name + '.rsync-filter'
                   }
                 ]
           }}

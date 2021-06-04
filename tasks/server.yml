@@ -1,48 +1,47 @@
 ---
 
-# This tasks run _only_, when ansible runs against _backup_server_. I.e. there
-# is _no_ `delegate_to` here!
 - block:
-    - name: backup_server | (local) Ensure local public keys directory exists
+    - name: server | (local) Ensure local public keys directory exists
       file:
         path: "{{ ssh_pubkeys_dir }}"
         state: directory
       delegate_to: localhost
 
-      # FIXME: Requires ansible 2.8.
-      #    - name: Generate backup server ssh keypair
-      #      openssh_keypair:
-      #        path:   '/root/.ssh/id_rsa'
-      #        state:  present
+    - name: server | (backup server) Generate ssh keypair
+      openssh_keypair:
+        path:   '/root/.ssh/id_rsa'
+        regenerate: never
+        state:  present
 
-    - name: backup_server | Obtain backup server user ssh public keys
+    - name: server | (local) Obtain ssh public key
       synchronize:
         mode: pull
         src: "{{ ansible_user_dir + '/.ssh/id_rsa.pub' }}"
         dest: "{{ ssh_pubkeys_dir }}"
 
 - block:
-    - name: backup_server | Install dependencies
+    - name: server | (backup server) Install rsnapshot
       package:
         name: "{{ rsnapshot_pkgs }}"
         state: 'present'
 
     - block:
-        - name: backup_server | Add Debian Stretch repository to Debian Jessie
+        - name: server | (backup server) Add Debian Stretch repository to Debian Jessie
           apt_repository:
             repo: 'deb http://mirror.yandex.ru/debian/ stretch main'
             filename: 'stretch'
             state: present
 
-        - name: backup_server | Lower Debian Stretch priority
+        - name: server | (backup server) Lower Debian Stretch priority
           copy:
             src:  'apt-preferences/10stretch'
             dest: '/etc/apt/preferences.d/10stretch'
 
-        - name: backup_server | Install rsnapshot from Debian Stretch
+        - name: server | (backup server) Install rsnapshot from Debian Stretch
           apt:
             name: rsnapshot=1.4.2-1
             state: present
 
       when: ansible_distribution == "Debian" and ansible_distribution_major_version | int == 8
 
+  delegate_to: "{{ backup_server }}"

@@ -14,6 +14,11 @@
       tags:
         - always
 
+    - name: Include backup server setup tasks
+      import_tasks: tasks/server.yml
+      tags:
+        - backup_server
+
     - name: Define internal variables
       import_tasks: tasks/define.yml
       tags:
@@ -41,12 +46,4 @@
         - 'rsnapshot'
 
   when: inventory_hostname in groups['backups']
-
-- block:
-    - name: Include backup server setup tasks
-      import_tasks: tasks/backup_server.yml
-
-  when: inventory_hostname in groups['backup_servers']
-  tags:
-    - backup_server
 

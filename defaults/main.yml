@@ -13,8 +13,18 @@ default_rsync_filters: >-
   }}
 
 # Backup points definition.
-# 'dst' - required. Destination directory name.
-# 'src' - required. Source directory name.
+# 'src' - (required) Name of source directory on backed up server.
+# 'dst' - (required) Name of destination directory on _backup_ server.
+# 'name' - (optional) Id, which will be used to identify this backup point and
+# all related resources. Ids should be unique among _both_ backup points and
+# backup scripts. If not specified, it'll be derived automatically from 'dst'.
+# 'rsync_filter_name' - (optional) name of default rsync filter to use.
+# 'rsync_filter' - (optional) path to rsync filter file. If not specified,
+# default rsync filter with name 'rsync_filter_name' will be looked up. If
+# 'rsync_filter_name' is also not specified, default rsync filter will be
+# looked up by backup point 'name'. And if that also fails, task fails.
+#
+# All other attributes are ignored.
 #r_backups:
 #  - name: 'root'
 #    src:  '/'

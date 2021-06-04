@@ -9,7 +9,8 @@
 
     - name: server | (backup server) Generate ssh keypair
       openssh_keypair:
-        path:   '/root/.ssh/id_rsa'
+        path: "{{ ansible_user_dir + '/.ssh/id_rsa' }}"
+        mode: 0600
         regenerate: never
         state:  present
 

@@ -27,6 +27,17 @@
               ] + r_data_files }}
       loop: "{{ _backup_points }}"
 
+    - name: rsnapshot | Add backup script files to file list
+      set_fact:
+        r_data_files: >
+          {{  [ { 'src' : item.script
+                , 'dest': item.install
+                , 'mode'  : '0755'
+                , 'force' : true
+                }
+              ] + r_data_files }}
+      loop: "{{ _backup_scripts }}"
+
   tags:
     - 'rsnapshot_filters'
 

@@ -37,8 +37,6 @@
               + [ { 'name'    : item_name
                   , 'dst'     : item_name
                   , 'script'  : item_script
-                  , 'user'    : item.user     | default(db_user) + '-' + item_name
-                  , 'password': item.password | default(db_password)
                   , 'install' : rsync_filters_dir + '/'
                                   + host_id + '-' + item_name
                                   + item_script | splitext | last
@@ -101,34 +99,39 @@
       debug:
         var: _backup_scripts
 
-    - name: define | Define MySQL scripts dictionary
+- block:
+    - name: define | Define dictionary for default MySQL script
       set_fact:
         r_backup_scripts_mysql: >-
-          {{ r_backup_scripts_mysql + [ item | combine(
+          {{ r_backup_scripts_mysql + [ item.0 | combine(
               { 'conf'              : role_path + '/templates/mysql.cnf'
-              , 'install_conf'      : item.install | splitext | first + '.cnf'
+              , 'install_conf'      : item.0.install | splitext | first + '.cnf'
+              , 'user'    : item.1.user     | default(db_user) + '-' + item.0.name
+              , 'password': item.1.password | default(db_password)
               })]
           }}
-      when: item.script == role_path + '/files/mysql.sh'
-      loop: "{{ _backup_scripts }}"
+      when: item.0.script == default_backup_scripts['mysql']
+      loop: "{{ _backup_scripts | zip(r_backup_scripts) | list }}"
 
-    - name: define | Define PostgreSQL scripts dictionary
+    - name: define | Define dictionary for default PostgreSQL script
       set_fact:
         r_backup_scripts_pgsql: >-
-          {{ r_backup_scripts_pgsql + [ item | combine(
+          {{ r_backup_scripts_pgsql + [ item.0 | combine(
               { 'conf'              : role_path + '/templates/pgsql.cnf'
-              , 'install_conf'      : item.install | splitext | first + '.cnf'
+              , 'install_conf'      : item.0.install | splitext | first + '.cnf'
               , 'passfile'          : role_path + '/templates/pgsql.pgpass'
-              , 'install_passfile'  : item.install | splitext | first + '.pgpass'
+              , 'install_passfile'  : item.0.install | splitext | first + '.pgpass'
+              , 'user'    : item.1.user     | default(db_user) + '-' + item.0.name
+              , 'password': item.1.password | default(db_password)
               })]
           }}
-      when: item.script == role_path + '/files/pgsql.sh'
-      loop: "{{ _backup_scripts }}"
+      when: item.0.script == default_backup_scripts['pgsql']
+      loop: "{{ _backup_scripts | zip(r_backup_scripts) | list }}"
 
-    - name: define | MySQL backup scripts
+    - name: define | Show MySQL backup scripts
       debug:
         var: r_backup_scripts_mysql
-    - name: define | PostgreSQL backup scripts
+    - name: define | Show PostgreSQL backup scripts
       debug:
         var: r_backup_scripts_pgsql
 

@@ -1,6 +1,7 @@
 ---
 
 - block:
+    # FIXME: Newer OS version may require python3 packages.
     - name: db | Ensure MySQL packages installed
       package:
         name:
@@ -15,7 +16,7 @@
         priv:     '*.*:SELECT,SUPER,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER'
         state:    present
       when: run_mode != 'uninstall'
-      loop: "{{ r_backup_scripts_mysql }}"
+      loop: "{{ _backup_scripts_mysql.values() | list }}"
 
     - name: db | Or delete MySQL user of backup server
       mysql_user:
@@ -23,7 +24,7 @@
         host:     'localhost'
         state:    absent
       when: run_mode == 'uninstall'
-      loop: "{{ r_backup_scripts_mysql }}"
+      loop: "{{ _backup_scripts_mysql.values() | list }}"
 
     - name: db | Add MySQL conf files to template list
       set_fact:
@@ -35,22 +36,12 @@
                 , 'force' : true
                 }
               ] + r_data_templates }}
-      loop: "{{ r_backup_scripts_mysql }}"
+      loop: "{{ _backup_scripts_mysql.values() | list }}"
 
-    - name: db | Define dictionary used in MySQL conf template
-      set_fact:
-        r_backup_script_confs: >-
-          {{  { item.name :
-                  { 'user'      : item.user
-                  , 'password'  : item.password
-                  }
-              } | combine(r_backup_script_confs)
-          }}
-      loop: "{{ r_backup_scripts_mysql }}"
-
-  when: db_mysql
+  when: _backup_scripts_mysql | length > 0
 
 - block:
+    # FIXME: Newer OS version may require python3 packages.
     - name: db | Ensure PostgreSQL packages installed
       package:
         name:
@@ -66,7 +57,7 @@
         state:    present
       become: yes
       become_user: 'postgres'
-      loop: "{{ r_backup_scripts_pgsql }}"
+      loop: "{{ _backup_scripts_pgsql.values() | list }}"
 
     # FIXME: Add remove task for postgresql too.
 
@@ -87,20 +78,8 @@
                 , 'force' : true
                 }
               ] + r_data_templates }}
-      loop: "{{ r_backup_scripts_pgsql }}"
+      loop: "{{ _backup_scripts_pgsql.values() | list }}"
 
-    - name: db | Define dictionary used in PostgreSQL conf template
-      set_fact:
-        r_backup_script_confs: >-
-          {{  { item.name :
-                  { 'user'      : item.user
-                  , 'password'  : item.password
-                  , 'install_passfile'  : item.install_passfile
-                  }
-              } | combine(r_backup_script_confs)
-          }}
-      loop: "{{ r_backup_scripts_pgsql }}"
-
-  when: db_postgresql
+  when: _backup_scripts_pgsql | length > 0
 
   # FIXME: Set up pg_hba.conf correctly.

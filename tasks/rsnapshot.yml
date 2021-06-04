@@ -16,15 +16,15 @@
     - 'rsnapshot_db'
 
 - block:
-    - name: rsnapshot | Add rsync filter files to file list
+    - name: rsnapshot | Add rsync filter files to template list
       set_fact:
-        r_data_files: >
+        r_data_templates: >
           {{  [ { 'src' : item.rsync_filter
                 , 'dest': item.install
                 , 'mode'  : '0755'
                 , 'force' : true
                 }
-              ] + r_data_files }}
+              ] + r_data_templates }}
       loop: "{{ _backup_points }}"
 
     - name: rsnapshot | Add backup script files to file list

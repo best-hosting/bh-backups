@@ -41,6 +41,15 @@ bh_pgsql_script: "{{ role_path + '/files/pgsql.sh' }}"
 #    password: 'pass'
 #    script: "{{ bh_mysql_script }}"
 
+# Default backup scripts, which may be referenced by name in 'script_name'
+# field of 'r_backup_scripts'.
+default_backup_scripts: >-
+  {{
+      { 'mysql': role_path + '/' + 'files/mysql.sh'
+      , 'pgsql': role_path + '/' + 'files/pgsql.sh'
+      }
+  }}
+
 # Root directory for all backups. This variable must be set for _backup
 # server_.
 #r_backup_root: '/var/cache/rsnapshot'

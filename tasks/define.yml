@@ -20,8 +20,6 @@
       vars:
         item_name: >-
           {{ item.name | default(item.dst | replace('/', '_')) }}
-        # FIXME: Do i really need to store rsync filter in variable? Or just
-        # pass path to file?
         item_rsync_filter: >-
           {{ item.rsync_filter if item.rsync_filter is defined
               else default_rsync_filters[item.rsync_filter_name]
@@ -30,24 +28,32 @@
           }}
       loop: "{{ r_backups }}"
 
+    # FIXME: Move 'user' and 'password' to corresponding script configs. This
+    # fields may not be here genrally.
     - name: define | Define internal r_backup_scripts dictionary
       set_fact:
         _backup_scripts: >-
           {{ _backup_scripts
               + [ { 'name'    : item_name
                   , 'dst'     : item_name
-                  , 'script'  : item.script
+                  , 'script'  : item_script
                   , 'user'    : item.user     | default(db_user) + '-' + item_name
                   , 'password': item.password | default(db_password)
                   , 'install' : rsync_filters_dir + '/'
                                   + host_id + '-' + item_name
-                                  + item.script | splitext | last
+                                  + item_script | splitext | last
                   }
                 ]
           }}
       vars:
         item_name: >-
           {{ item.name | default(item.dst | replace('/', '_')) }}
+        item_script: >-
+          {{ item.script if item.script is defined
+              else default_backup_scripts[item.script_name]
+                if item.script_name is defined
+                else default_backup_scripts[item_name]
+          }}
       loop: "{{ r_backup_scripts }}"
 
     - name: define | Check, that all names are unique

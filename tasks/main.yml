@@ -2,6 +2,8 @@
 # tasks file for bh-backups
 
 - block:
+    # FIXME: Remove this. It's not our business.. That should be fixed in play
+    # instead.
     - name: Gather facts about host
       gather_facts:
       tags:

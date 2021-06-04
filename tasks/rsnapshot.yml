@@ -99,7 +99,7 @@
   delegate_to: "{{ backup_server }}"
 
 - block:
-    - name: rsnapshot | Set up cron tasks
+    - name: rsnapshot | Create cron job for sync and daily
       cron:
         name: "{{ host_id }} sync and daily"
         hour  : "{{ r_sync.hour }}"
@@ -112,7 +112,7 @@
         user: 'root'
         cron_file: "{{ rsnapshot_cron_file }}"
 
-    - name: rsnapshot | weekly
+    - name: rsnapshot | Create cron job for weekly
       cron:
         name: "{{ host_id }} weekly"
         hour  : "{{ r_weekly.hour }}"
@@ -124,7 +124,7 @@
         user: 'root'
         cron_file: "{{ rsnapshot_cron_file }}"
 
-    - name: rsnapshot | monthly
+    - name: rsnapshot | Create cron job for monthly
       cron:
         name: "{{ host_id }} monthly"
         hour  : "{{ r_monthly.hour }}"
@@ -142,7 +142,7 @@
     - 'rsnapshot_cron'
     - 'rsnapshot_config'
 
-- name: rsnapshot | Or delete cron files
+- name: rsnapshot | Or delete cron jobs
   file:
     name: "{{ rsnapshot_cron_file }}"
     state: absent

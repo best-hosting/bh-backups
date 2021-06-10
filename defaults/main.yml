@@ -9,9 +9,10 @@ install_path: '/etc'
 # 'src' - (required) name of source directory on backed up server.
 # 'dst' - (required) name of destination directory (under 'r_snapshot_root')
 # for this backup point on _backup_ server.
-# 'name' - (optional) id, which will be used to identify this backup point and
-# all related resources. Ids should be unique among _both_ backup points and
-# backup scripts. If not specified, it'll be derived automatically from 'dst'.
+# 'name' - (required, but has default) id, which will be used to identify this
+# backup point and all related resources. Ids should be unique among _both_
+# backup points and backup scripts. If not specified, it'll be derived
+# automatically from 'dst'.
 # 'rsync_filter_name' - (optional) name of default rsync filter to use.
 # 'rsync_filter' - (optional) path to rsync filter file. If not specified,
 # default rsync filter with name 'rsync_filter_name' will be looked up. If
@@ -34,9 +35,14 @@ default_rsync_filters: >-
 # Backup scripts definition.
 # 'dst' - (required) name of destination directory (under 'r_snapshot_root')
 # for this script on _backup_ server.
-# 'name' - (optional) id, which will be used to identify this backup script and
-# all related resources. Ids should be unique among _both_ backup points and
-# backup scripts. If not specified, it'll be derived automatically from 'dst'.
+# 'name' - (required, but has default) id, which will be used to identify this
+# backup script and all related resources. This 'name' prefixed with 'host_id'
+# (normalized 'inventory_hostname') will also be used as ssh 'Host' added to
+# '.ssh/config' on backup server for this particular script. So it's _assumed
+# and hardcoded_, that each script will connect to ssh host with name of
+# 'ssh_host' field of '_backup_scripts' internal dictionary (shown after
+# define stage).  Ids should be unique among _both_ backup points and backup
+# scripts.  If not specified, it'll be derived automatically from 'dst'.
 # 'script_name' - (optional) name of default backup script to use.
 # 'script' - (optional) path to backup script file. If not specified, default
 # backup script with name 'script_name' will be looked up. If 'script_name' is

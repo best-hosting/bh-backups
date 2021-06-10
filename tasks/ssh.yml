@@ -2,13 +2,10 @@
 
 # _backup server_ : Add Host-s to ssh config.
 - block:
-    # FIXME: ssh host name expected by backup script is hardcoded here.
-    # Now it's expected to match with the name, which script will have on
-    # backup server (after install).
     - name: ssh | Define ssh hostnames
       set_fact:
         r_ssh_hosts: >
-          {{  [{ 'ssh_host':    item.install | basename | splitext | first
+          {{  [{ 'ssh_host':     item.ssh_host
                , 'ssh_hostname': item.ssh_hostname | default(ansible_host)
               }] + r_ssh_hosts
           }}
@@ -31,6 +28,7 @@
         marker: "# {mark} ANSIBLE MANAGED BLOCK bh-backups of {{ host_id }}"
         owner:  "{{ backup_user }}"
         mode:   '0600'
+        backup: yes
         path: >-
           {{ backup_user_dir + '/.ssh/config' }}
         create: yes

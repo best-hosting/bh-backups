@@ -1,5 +1,6 @@
 ---
 
+# FIXME: Rename 'ssh_host_access' tag to 'backup_ssh'.
 # _backup server_ : Add Host-s to ssh config.
 - block:
     - name: ssh | Define ssh hostnames

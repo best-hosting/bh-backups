@@ -21,8 +21,6 @@ r_ssh_hosts:
   - ssh_host: "{{ host_id }}"
     ssh_hostname: "{{ ansible_host }}"
 
-# FIXME: Just store in ssh_pubkeys_dir without user name.
-ssh_host_pubkeys_db_dir: "{{ playbook_dir + '/ssh_host_pubkeys/' + host_id }}"
 ssh_host_keys: []
 
 # I _need_ gather facts run against backup_server, to initialize these
@@ -30,12 +28,14 @@ ssh_host_keys: []
 backup_user: "{{ hostvars[backup_server]['ansible_user_id'] }}"
 backup_user_dir: "{{ hostvars[backup_server]['ansible_user_dir'] }}"
 
-ssh_pubkeys_db_dir: "{{ playbook_dir + '/ssh_pubkeys' }}"
-# FIXME: Rename to server_ssh_pubkeys_dir.
-ssh_pubkeys_backup_server_dir: >-
-  {{ ssh_pubkeys_db_dir + '/' + backup_server + '/' + backup_user }}
-ssh_pubkeys_dir: >-
-  {{ ssh_pubkeys_db_dir + '/' + host_id + '/' + ansible_user_id }}
+# Local directory for store ssh backup server user public key, which will be
+# added to 'authorized_keys' on all hosts, which are backed up to this server.
+server_ssh_pubkeys_dir: >-
+  {{ ssh_pubkeys_dir + '/' + backup_server + '/' + backup_user }}
+# Local directory for store ssh host public keys (host itself, not user). It
+# will be added to 'known_hosts' on backup server, which backups this host.
+host_ssh_pubkeys_dir: >-
+  {{ ssh_pubkeys_dir + '/' + host_id }}
 
 rsnapshot_pkgs:
 - 'rsnapshot'

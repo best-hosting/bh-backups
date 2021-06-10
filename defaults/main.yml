@@ -92,3 +92,6 @@ crit_size_diff: 42949672960
 # library files, directories and all backup data will _not_ be uninstalled in
 # any case.
 run_mode: 'install'
+
+# Local directory to store ssh public keys.
+ssh_pubkeys_dir: "{{ playbook_dir + '/ssh_pubkeys' }}"

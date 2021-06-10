@@ -44,7 +44,7 @@
 - block:
     - name: ssh | (local) Ensure ssh host public keys directory exists
       file:
-        path: "{{ ssh_host_pubkeys_db_dir }}"
+        path: "{{ host_ssh_pubkeys_dir }}"
         state: directory
       delegate_to: localhost
 
@@ -57,36 +57,46 @@
       register: ssh_host_keys_found
 
     - name: ssh | (local) Obtain ssh host public keys
-      synchronize:
-        mode: pull
-        archive: no
-        checksum: yes
-        recursive: yes
-        delete: yes
-        src: "{{ item.path }}"
-        dest: "{{ ssh_host_pubkeys_db_dir }}"
+      ansible.builtin.fetch:
+        src:  "{{ item.path }}"
+        dest: "{{ host_ssh_pubkeys_dir + '/' }}"
+        flat: yes
       loop: "{{ ssh_host_keys_found.files }}"
 
   tags:
-    - 'ssh_host_keys_db'
+    - 'ssh_host_access'
 
 # _localhost_ : Parse saved ssh host keys on _localhost_.
 - block:
-    - name: ssh | (local) Find backup server ssh public keys
+    - name: ssh | (local) Find backup server user ssh public keys
       find:
-        paths:      "{{ ssh_pubkeys_backup_server_dir }}"
+        paths:      "{{ server_ssh_pubkeys_dir }}"
         patterns:   '^id_rsa.pub$'
         use_regex:  true
         file_type:  'file'
-      register: ssh_pubkeys_backup_server_found
+      register: server_ssh_pubkeys_found
+      delegate_to: localhost
 
+    - name: ssh | Add or remove backup server user from authorized_keys
+      authorized_key:
+        user:   "{{ ansible_user_id }}"
+        state: >-
+          {{ 'present' if run_mode != 'uninstall' else 'absent' }}
+        key:    "{{ lookup('file', item.path) }}"
+      loop: "{{ server_ssh_pubkeys_found.files }}"
+
+  tags:
+    - 'ssh_host_access'
+
+- block:
     - name: ssh | (local) Find ssh host public keys
       find:
-        paths: "{{ ssh_host_pubkeys_db_dir }}"
+        paths: "{{ host_ssh_pubkeys_dir }}"
         patterns: '^ssh_host_[^/]+_key\.pub$'
         use_regex:  true
         file_type:  'file'
-      register: ssh_host_keys_local_db
+      register: host_ssh_pubkeys_found
+      delegate_to: localhost
 
     - name: ssh | Parse ssh host public keys
       set_fact:
@@ -95,13 +105,9 @@
                         | zip(lookup('file', item.path).split(' '))
                     )
               ] + ssh_host_keys }}
-      loop: "{{ ssh_host_keys_local_db.files }}"
+      loop: "{{ host_ssh_pubkeys_found.files }}"
+    # '
 
-  delegate_to: localhost
-  tags:
-    - 'ssh_host_access'
-
-- block:
     - name: ssh | (backup_server) Add host to backup server's known_hosts
       known_hosts:
         name: "{{ ansible_host }}"
@@ -110,13 +116,6 @@
       loop: "{{ ssh_host_keys }}"
       delegate_to: "{{ backup_server }}"
 
-    - name: ssh | Add or remove backup server user from authorized_keys
-      authorized_key:
-        user:   "{{ ansible_user_id }}"
-        state: >-
-          {{ 'present' if run_mode != 'uninstall' else 'absent' }}
-        key:    "{{ lookup('file', item.path) }}"
-      loop: "{{ ssh_pubkeys_backup_server_found.files }}"
   tags:
     - 'ssh_host_access'
 

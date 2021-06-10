@@ -3,7 +3,7 @@
 - block:
     - name: server | (local) Ensure directory for public key exists
       file:
-        path: "{{ ssh_pubkeys_backup_server_dir }}"
+        path: "{{ server_ssh_pubkeys_dir }}"
         state: directory
       delegate_to: localhost
 
@@ -18,10 +18,12 @@
     - name: server | (local) Obtain ssh public key
       ansible.builtin.fetch:
         src: "{{ ansible_user_dir + '/.ssh/id_rsa.pub' }}"
-        dest: "{{ ssh_pubkeys_backup_server_dir + '/' }}"
+        dest: "{{ server_ssh_pubkeys_dir + '/' }}"
         flat: yes
 
   delegate_to: "{{ backup_server }}"
+  tags:
+    - 'ssh_host_access'
 
 - block:
     - name: server | (backup server) Install rsnapshot

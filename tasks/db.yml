@@ -1,11 +1,15 @@
 ---
 
 - block:
-    # FIXME: Newer OS version may require python3 packages.
+    - name: db | (backup server) Ensure MySQL packages installed
+      package:
+        name: "{{ server_mysql_pkgs }}"
+        state: 'present'
+      delegate_to: "{{ backup_server }}"
+
     - name: db | Ensure MySQL packages installed
       package:
-        name:
-          - 'python-mysqldb'
+        name: "{{ mysql_pkgs }}"
         state: 'present'
 
     - name: db | Add MySQL user for backup server
@@ -41,12 +45,15 @@
   when: _backup_scripts_mysql | length > 0
 
 - block:
-    # FIXME: Newer OS version may require python3 packages.
+    - name: db | (backup server) Ensure PostgreSQL packages installed
+      package:
+        name: "{{ server_psql_pkgs }}"
+        state: 'present'
+      delegate_to: "{{ backup_server }}"
+
     - name: db | Ensure PostgreSQL packages installed
       package:
-        name:
-          - 'sudo'
-          - 'python-psycopg2'
+        name: "{{ psql_pkgs }}"
         state: 'present'
 
     - name: db | Add PostgreSQL user for backup server
@@ -59,7 +66,7 @@
       become_user: 'postgres'
       loop: "{{ _backup_scripts_pgsql.values() | list }}"
 
-    # FIXME: Add remove task for postgresql too.
+    # TODO: Add remove task for postgresql too.
 
     - name: db | Add PostgreSQL conf files to template list
       set_fact:

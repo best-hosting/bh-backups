@@ -6,25 +6,38 @@
     # instead.
     - name: Gather facts about host
       gather_facts:
-      tags:
-        - always
 
     - name: Gather facts about backup server
       gather_facts:
       delegate_to: "{{ backup_server }}"
       delegate_facts: true
-      tags:
-        - always
 
+    - name: Determine python version
+      set_fact:
+        is_python3_used: >-
+          {{ hostvars[item].ansible_python.version.major == 3 }}
+      delegate_to: "{{ item }}"
+      delegate_facts: true
+      loop: >-
+        {{ [backup_server, inventory_hostname] }}
+
+    - name: Show detected python versions
+      debug:
+        msg: "{{ hostvars[item].is_python3_used }}"
+      loop: >-
+        {{ [backup_server, inventory_hostname] }}
+
+    - name: Define variables
+      import_tasks: tasks/define.yml
+
+  tags:
+    - always
+
+- block:
     - name: Include backup server setup tasks
       import_tasks: tasks/server.yml
       tags:
         - backup_server
-
-    - name: Define internal variables
-      import_tasks: tasks/define.yml
-      tags:
-        - always
 
     - name: Count files and size in backups
       import_tasks: 'tasks/count.yml'

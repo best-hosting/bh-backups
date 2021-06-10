@@ -92,8 +92,6 @@ crit_size: 60
 warn_size_diff: 10737418240
 crit_size_diff: 42949672960
 
-# FIXME: Rename to "role_name"+run_mode , because different roles may have
-# this variable.
 # Whether to install or uninstall rsnapshot configs. Note, that rsync filter
 # library files, directories and all backup data will _not_ be uninstalled in
 # any case.

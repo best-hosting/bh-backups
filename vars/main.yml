@@ -38,17 +38,35 @@ host_ssh_pubkeys_dir: >-
   {{ ssh_pubkeys_dir + '/' + host_id }}
 
 rsnapshot_pkgs:
-- 'rsnapshot'
-# mysql script deps
-- 'socat'
-- >-
-  {%- if ansible_distribution == "Debian"
-        and ansible_distribution_major_version | int > 7 -%}
-      mariadb-client
-  {%- elif ansible_distribution == "Debian" -%}
-      mysql-client
-  {%- endif %}
-- 'postgresql-client'
+  - 'rsnapshot'
+
+# Packages required for 'mysql' backup script on backup server.
+server_mysql_pkgs:
+  - 'socat'
+  - >-
+    {%- if ansible_distribution == "Debian"
+          and ansible_distribution_major_version | int > 7 -%}
+        mariadb-client
+    {%- elif ansible_distribution == "Debian" -%}
+        mysql-client
+    {%- endif %}
+
+# Packages required for 'mysql' backup script on backed up host.
+mysql_pkgs:
+  - >-
+    {% if is_python3_used -%} python3-mysqldb {%- else -%} python-mysqldb {%- endif %}
+
+# Packages required for 'psql' backup script on backup server.
+server_psql_pkgs:
+  - 'socat'
+  - 'postgresql-client'
+  - 'sudo'
+
+# Packages required for 'psql' backup script on backed up host.
+psql_pkgs:
+  - >-
+    {% if is_python3_used -%} python3-psycopg2 {%- else -%} python-psycopg2 {%- endif %}
+
 
 # Internal r_backups version.
 _backup_points: []

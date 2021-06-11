@@ -24,3 +24,6 @@
 
 # VDS manager data.
 - root/.vdstools/
+
+# ISP backup directory.
+- /var/backup/

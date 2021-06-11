@@ -1,0 +1,48 @@
+
+- block:
+    - name: cron | (server) Create cron job for sync and daily
+      cron:
+        name: "{{ host_id }} sync and daily"
+        hour  : "{{ r_sync.hour }}"
+        minute: "{{ r_sync.minute }}"
+
+        job: >-
+          /usr/bin/rsnapshot -c {{ rsnapshot_conf }} sync ;
+          /usr/bin/rsnapshot -c {{ rsnapshot_conf }} daily
+        state: present
+        user: 'root'
+        cron_file: "{{ rsnapshot_cron_file }}"
+
+    - name: cron | (server) Create cron job for weekly
+      cron:
+        name: "{{ host_id }} weekly"
+        hour  : "{{ r_weekly.hour }}"
+        minute: "{{ r_weekly.minute }}"
+        weekday: "0"
+        job: >-
+          /usr/bin/rsnapshot -c {{ rsnapshot_conf }} weekly
+        state: present
+        user: 'root'
+        cron_file: "{{ rsnapshot_cron_file }}"
+
+    - name: cron | (server) Create cron job for monthly
+      cron:
+        name: "{{ host_id }} monthly"
+        hour  : "{{ r_monthly.hour }}"
+        minute: "{{ r_monthly.minute }}"
+        day: "1"
+        job: >-
+          /usr/bin/rsnapshot -c {{ rsnapshot_conf }} monthly
+        state: present
+        user: 'root'
+        cron_file: "{{ rsnapshot_cron_file }}"
+
+  when: run_mode != 'uninstall'
+  delegate_to: "{{ backup_server }}"
+
+- name: cron | (server) Or delete cron jobs
+  file:
+    name: "{{ rsnapshot_cron_file }}"
+    state: absent
+  when: run_mode == 'uninstall'
+  delegate_to: "{{ backup_server }}"

@@ -62,5 +62,10 @@
       tags:
         - backup_rsnapshot
 
+    - name: Include cron setup tasks
+      import_tasks: tasks/cron.yml
+      tags:
+        - backup_cron
+
   when: inventory_hostname in groups['backups']
 

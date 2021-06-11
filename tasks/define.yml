@@ -100,8 +100,6 @@
         var: _backup_scripts
 
 - block:
-    # FIXME: Generate random passwords and derive username without requiring
-    # anything from user.
     - name: define | Define dictionary for default MySQL script
       set_fact:
         _backup_scripts_mysql: >-
@@ -110,11 +108,16 @@
                   item.0 | combine(
                     { 'conf'         : role_path + '/templates/mysql.cnf'
                     , 'install_conf' : item.0.install | splitext | first + '.cnf'
-                    , 'user'    : item.1.user     | default(db_user) + '-' + item.0.name
-                    , 'password': item.1.password | default(db_password)
+                    , 'user'    : item_user
+                    , 'password': lookup('password', item_pw_file + ' length=18 chars=ascii_letters,digits')
                     })
               })
           }}
+      vars:
+        item_user: >-
+          {{ item.1.user | default(backup_server + '-' + item.0.name) }}
+        item_pw_file: >-
+          {{ 'passwords/' + inventory_hostname + '/mysql/' + item_user }}
       when: item.0.script == default_backup_scripts['mysql']
       loop: "{{ _backup_scripts | zip(r_backup_scripts) | list }}"
 
@@ -128,11 +131,16 @@
                     , 'install_conf'      : item.0.install | splitext | first + '.cnf'
                     , 'passfile'          : role_path + '/templates/pgsql.pgpass'
                     , 'install_passfile'  : item.0.install | splitext | first + '.pgpass'
-                    , 'user'    : item.1.user     | default(db_user) + '-' + item.0.name
-                    , 'password': item.1.password | default(db_password)
+                    , 'user'    : item_user
+                    , 'password': lookup('password', item_pw_file + ' length=18 chars=ascii_letters,digits')
                     })
               })
           }}
+      vars:
+        item_user: >-
+          {{ item.1.user | default(backup_server + '-' + item.0.name) }}
+        item_pw_file: >-
+          {{ 'passwords/' + inventory_hostname + '/psql/' + item_user }}
       when: item.0.script == default_backup_scripts['pgsql']
       loop: "{{ _backup_scripts | zip(r_backup_scripts) | list }}"
 

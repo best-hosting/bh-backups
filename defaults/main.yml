@@ -62,12 +62,6 @@ default_backup_scripts: >-
       }
   }}
 
-# Database user name, which backup server will use to backup db.
-db_user: "{{ backup_server }}"
-
-# Database user password.
-db_password: "{{ lookup('file', 'backup_mysql_' + inventory_hostname + '.password') }}"
-
 r_sync:
   hour: 2
   minute: 30

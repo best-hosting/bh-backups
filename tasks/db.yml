@@ -19,6 +19,7 @@
         host:     'localhost'
         priv:     '*.*:SELECT,SUPER,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER'
         state:    present
+        update_password: always
       when: run_mode != 'uninstall'
       loop: "{{ _backup_scripts_mysql.values() | list }}"
 

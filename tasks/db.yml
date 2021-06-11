@@ -44,6 +44,8 @@
       loop: "{{ _backup_scripts_mysql.values() | list }}"
 
   when: _backup_scripts_mysql | length > 0
+  tags:
+    - backup_mysql
 
 - block:
     - name: db | (backup server) Ensure PostgreSQL packages installed
@@ -68,6 +70,7 @@
       loop: "{{ _backup_scripts_pgsql.values() | list }}"
 
     # TODO: Add remove task for postgresql too.
+    # FIXME: Set up pg_hba.conf correctly.
 
     - name: db | Add PostgreSQL conf files to template list
       set_fact:
@@ -89,5 +92,6 @@
       loop: "{{ _backup_scripts_pgsql.values() | list }}"
 
   when: _backup_scripts_pgsql | length > 0
+  tags:
+    - backup_psql
 
-  # FIXME: Set up pg_hba.conf correctly.

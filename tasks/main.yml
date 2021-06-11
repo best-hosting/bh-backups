@@ -42,23 +42,25 @@
     - name: Count files and size in backups
       import_tasks: 'tasks/count.yml'
       tags:
-        - always
-        - count_files
+        - backup_count_files
+        - backup_rsnapshot
+        - backup_rsnapshot_config
+        - backup_db
 
     - name: Include ssh setup tasks
       import_tasks: tasks/ssh.yml
       tags:
-        - 'rsnapshot_ssh'
+        - backup_ssh
 
     - name: Include database setup tasks
       import_tasks: tasks/db.yml
       tags:
-        - 'rsnapshot_db'
+        - backup_db
 
     - name: Include rsnapshot setup tasks
       import_tasks: tasks/rsnapshot.yml
       tags:
-        - 'rsnapshot'
+        - backup_rsnapshot
 
   when: inventory_hostname in groups['backups']
 

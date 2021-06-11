@@ -23,7 +23,8 @@
 
   delegate_to: "{{ backup_server }}"
   tags:
-    - 'ssh_host_access'
+    - backup_ssh
+    - backup_ssh_access
 
 - block:
     - name: server | (backup server) Install rsnapshot

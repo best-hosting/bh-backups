@@ -11,11 +11,10 @@
                 }
               ] + r_data_templates }}
 
-  tags:
-    - 'rsnapshot_config'
-    - 'rsnapshot_db'
+      tags:
+        - backup_rsnapshot_config
+        - backup_db
 
-- block:
     - name: rsnapshot | Add rsync filter files to template list
       set_fact:
         r_data_templates: >
@@ -26,6 +25,8 @@
                 }
               ] + r_data_templates }}
       loop: "{{ _backup_points }}"
+      tags:
+        - backup_rsnapshot_filters
 
     - name: rsnapshot | Add backup script files to file list
       set_fact:
@@ -37,9 +38,8 @@
                 }
               ] + r_data_files }}
       loop: "{{ _backup_scripts }}"
-
-  tags:
-    - 'rsnapshot_filters'
+      tags:
+        - backup_db
 
 - block:
     - name: rsnapshot | Ensure snapshot root directory exists
@@ -50,9 +50,9 @@
         path:  "{{ r_snapshot_root }}"
         state: directory
       tags:
-        - 'rsnapshot_config'
-        - 'rsnapshot_filters'
-        - 'rsnapshot_db'
+        - backup_rsnapshot_config
+        - backup_rsnapshot_filters
+        - backup_db
 
     - name: rsnapshot | Ensure rsync filters directories exist
       file:
@@ -65,8 +65,7 @@
         - "{{ rsync_filters_dir }}"
         - "{{ rsync_filters_libdir }}"
       tags:
-        - 'rsnapshot_filters'
-        - 'rsnapshot_db'
+        - backup_rsnapshot_filters
 
     - name: rsnapshot | Copy rsync filters library files
       copy:
@@ -77,8 +76,11 @@
       with_fileglob:
         - "rsnapshot.d/lib/*"
       tags:
-        - 'rsnapshot_filters'
+        - backup_rsnapshot_filters
 
+  delegate_to: "{{ backup_server }}"
+
+- block:
     - name: rsnapshot | Restore or create config files
       include_role:
         name: sgf-restore
@@ -91,10 +93,6 @@
         default_data_templates: "{{ r_data_templates }}"
         default_file_dest: 'huy'
       when: run_mode != 'uninstall'
-      tags:
-        - 'rsnapshot_config'
-        - 'rsnapshot_filters'
-        - 'rsnapshot_db'
 
     - name: rsnapshot | Or delete config files
       file:
@@ -102,12 +100,12 @@
         state: absent
       loop: "{{ r_data_files + r_data_templates }}"
       when: run_mode == 'uninstall'
-      tags:
-        - 'rsnapshot_config'
-        - 'rsnapshot_filters'
-        - 'rsnapshot_db'
 
   delegate_to: "{{ backup_server }}"
+  tags:
+    - backup_rsnapshot_config
+    - backup_rsnapshot_filters
+    - backup_db
 
 - block:
     - name: rsnapshot | Create cron job for sync and daily

@@ -39,7 +39,7 @@
     - count_files_cache
 
 - block:
-    - name: server | (backup server) Ensure snapshot root directory exists
+    - name: count | (backup server) Ensure snapshot root directory exists
       file:
         path: "{{ r_snapshot_root }}"
         mode: 0700

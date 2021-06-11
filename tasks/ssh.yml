@@ -1,6 +1,5 @@
 ---
 
-# FIXME: Rename 'ssh_host_access' tag to 'backup_ssh'.
 # _backup server_ : Add Host-s to ssh config.
 - block:
     - name: ssh | Define ssh hostnames
@@ -36,8 +35,8 @@
 
   delegate_to: "{{ backup_server }}"
   tags:
-    - 'rsnapshot_ssh_hosts'
-    - 'rsnapshot_db'
+    - backup_db
+    - backup_ssh_hosts
 
 # _localhost_ : Obtain ssh host pubkeys.
 - block:
@@ -63,7 +62,7 @@
       loop: "{{ ssh_host_keys_found.files }}"
 
   tags:
-    - 'ssh_host_access'
+    - backup_ssh_access
 
 # _localhost_ : Parse saved ssh host keys on _localhost_.
 - block:
@@ -85,7 +84,7 @@
       loop: "{{ server_ssh_pubkeys_found.files }}"
 
   tags:
-    - 'ssh_host_access'
+    - backup_ssh_access
 
 - block:
     - name: ssh | (local) Find ssh host public keys
@@ -116,5 +115,5 @@
       delegate_to: "{{ backup_server }}"
 
   tags:
-    - 'ssh_host_access'
+    - backup_ssh_access
 

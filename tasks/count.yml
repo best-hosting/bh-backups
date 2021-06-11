@@ -1,12 +1,12 @@
 ---
 
 - block:
-    - name: count | Stat file count cache file
+    - name: count | (local) Stat file count cache file
       stat:
         path: "{{ r_files_count_cache_file }}"
       register: r_files_count_cache_stats
 
-    - name: count | Stat size cache file
+    - name: count | (local) Stat size cache file
       stat:
         path: "{{ r_size_cache_file }}"
       register: r_size_cache_stats
@@ -39,14 +39,14 @@
     - count_files_cache
 
 - block:
-    - name: count | (backup server) Ensure snapshot root directory exists
+    - name: count | (server) Ensure snapshot root directory exists
       file:
         path: "{{ r_snapshot_root }}"
         mode: 0700
         state: directory
       delegate_to: "{{ backup_server }}"
 
-    - name: count | Stat backup points
+    - name: count | (server) Stat backup points
       stat:
         path: "{{ r_snapshot_root + '/' + item }}"
       loop: >-
@@ -78,7 +78,7 @@
 - block:
     # For regular backup points `dst` must be specified. For backup scripts
     # `dst` is assumed to be equal to name.
-    - name: count | Count files in backups
+    - name: count | (server) Count files in backups
       shell: >-
         {{ 'set -o pipefail; /usr/bin/find '
               + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst | default(item.name) )
@@ -92,7 +92,7 @@
       check_mode: no
       #changed_when: false
 
-    - name: count | Count size of backups
+    - name: count | (server) Count size of backups
       command: >-
         {{  '/usr/bin/du -s -b '
               + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst | default(item.name) )
@@ -135,18 +135,18 @@
         {{ ( _backup_points + _backup_scripts ) | zip(r_size_raw.results) | list }}
 
 - block:
-    - name: count | Ensure directory for rsnapshot cache exists
+    - name: count | (local) Ensure directory for rsnapshot cache exists
       file:
         mode: '0700'
         path:  "{{ r_cache_dir }}"
         state: directory
 
-    - name: count | Save file count locally
+    - name: count | (local) Save file count locally
       copy:
         content:  "{{ r_files_count | to_yaml }}"
         dest:     "{{ r_files_count_cache_file }}"
 
-    - name: count | Save size locally
+    - name: count | (local) Save size locally
       copy:
         content:  "{{ r_size | to_yaml }}"
         dest:     "{{ r_size_cache_file }}"

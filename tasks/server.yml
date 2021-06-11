@@ -7,7 +7,7 @@
         state: directory
       delegate_to: localhost
 
-    - name: server | (backup server) Generate ssh keypair
+    - name: server | (server) Generate ssh keypair
       openssh_keypair:
         path: "{{ ansible_user_dir + '/.ssh/id_rsa' }}"
         mode: 0600
@@ -15,7 +15,7 @@
         regenerate: never
         state:  present
 
-    - name: server | (local) Obtain ssh public key
+    - name: server | (server) Obtain ssh public key
       ansible.builtin.fetch:
         src: "{{ ansible_user_dir + '/.ssh/id_rsa.pub' }}"
         dest: "{{ server_ssh_pubkeys_dir + '/' }}"
@@ -27,24 +27,24 @@
     - backup_ssh_access
 
 - block:
-    - name: server | (backup server) Install rsnapshot
+    - name: server | (server) Install rsnapshot
       package:
         name: "{{ rsnapshot_pkgs }}"
         state: 'present'
 
     - block:
-        - name: server | (backup server) Add Debian Stretch repository to Debian Jessie
+        - name: server | (server) Add Debian Stretch repository to Debian Jessie
           apt_repository:
             repo: 'deb http://mirror.yandex.ru/debian/ stretch main'
             filename: 'stretch'
             state: present
 
-        - name: server | (backup server) Lower Debian Stretch priority
+        - name: server | (server) Lower Debian Stretch priority
           copy:
             src:  'apt-preferences/10stretch'
             dest: '/etc/apt/preferences.d/10stretch'
 
-        - name: server | (backup server) Install rsnapshot from Debian Stretch
+        - name: server | (server) Install rsnapshot from Debian Stretch
           apt:
             name: rsnapshot=1.4.2-1
             state: present

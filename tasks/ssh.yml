@@ -20,7 +20,7 @@
               User {{ ansible_user_id }}
           {% endfor %}
 
-    - name: ssh | (backup_server) Add or remove host from ssh config
+    - name: ssh | (server) Add or remove host from ssh config
       blockinfile:
         block: "{{ r_ssh_hosts }}"
         state: >-
@@ -54,7 +54,7 @@
         file_type:  'file'
       register: ssh_host_keys_found
 
-    - name: ssh | (local) Obtain ssh host public keys
+    - name: ssh | Obtain ssh host public keys
       ansible.builtin.fetch:
         src:  "{{ item.path }}"
         dest: "{{ host_ssh_pubkeys_dir + '/' }}"
@@ -106,7 +106,7 @@
       loop: "{{ host_ssh_pubkeys_found.files }}"
     # '
 
-    - name: ssh | (backup_server) Add host to backup server's known_hosts
+    - name: ssh | (server) Add host to backup server's known_hosts
       known_hosts:
         name: "{{ ansible_host }}"
         key:  "{{ ansible_host + ' ' + item.keytype + ' ' + item.key }}"

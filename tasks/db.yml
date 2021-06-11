@@ -1,7 +1,7 @@
 ---
 
 - block:
-    - name: db | (backup server) Ensure MySQL packages installed
+    - name: db | (server) Ensure MySQL packages installed
       package:
         name: "{{ server_mysql_pkgs }}"
         state: 'present'
@@ -48,7 +48,7 @@
     - backup_mysql
 
 - block:
-    - name: db | (backup server) Ensure PostgreSQL packages installed
+    - name: db | (server) Ensure PostgreSQL packages installed
       package:
         name: "{{ server_psql_pkgs }}"
         state: 'present'

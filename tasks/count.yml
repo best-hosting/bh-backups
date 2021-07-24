@@ -41,6 +41,9 @@
         state: directory
       delegate_to: "{{ backup_server }}"
 
+    # FIXME: Parametrize over interval names. Then, check all intervals here.
+    # I should use the oldes (the most recent) interval to calculate counts
+    # and the earliest (the most old) to calculate 'NAGIOS_FIRSTRUN'.
     - name: count | (server) Stat backup points
       stat:
         path: "{{ r_snapshot_root + '/' + item }}"

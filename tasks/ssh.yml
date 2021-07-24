@@ -11,6 +11,7 @@
           }}
       loop: "{{ _backup_scripts }}"
 
+    # FIXME: Name overlap.
     - name: ssh | Define ssh config content
       set_fact:
         r_ssh_hosts: |
@@ -40,13 +41,13 @@
 
 # _localhost_ : Obtain ssh host pubkeys.
 - block:
-    - name: ssh | (local) Ensure ssh host public keys directory exists
+    - name: ssh | (local) Ensure hosts's ssh host public keys directory exists
       file:
         path: "{{ host_ssh_pubkeys_dir }}"
         state: directory
       delegate_to: localhost
 
-    - name: ssh | Find ssh host public keys
+    - name: ssh | Find host's ssh host public keys
       find:
         paths: '/etc/ssh'
         patterns: '^ssh_host_[^/]+_key\.pub$'
@@ -54,7 +55,7 @@
         file_type:  'file'
       register: ssh_host_keys_found
 
-    - name: ssh | Obtain ssh host public keys
+    - name: ssh | Obtain host's ssh host public keys
       ansible.builtin.fetch:
         src:  "{{ item.path }}"
         dest: "{{ host_ssh_pubkeys_dir + '/' }}"
@@ -75,7 +76,7 @@
       register: server_ssh_pubkeys_found
       delegate_to: localhost
 
-    - name: ssh | Add or remove backup server user from authorized_keys
+    - name: ssh | Add or remove backup server user from hosts's authorized_keys
       authorized_key:
         user:   "{{ ansible_user_id }}"
         state: >-
@@ -87,7 +88,7 @@
     - backup_ssh_access
 
 - block:
-    - name: ssh | (local) Find ssh host public keys
+    - name: ssh | (local) Find host's ssh host public keys
       find:
         paths: "{{ host_ssh_pubkeys_dir }}"
         patterns: '^ssh_host_[^/]+_key\.pub$'
@@ -96,16 +97,17 @@
       register: host_ssh_pubkeys_found
       delegate_to: localhost
 
-    - name: ssh | Parse ssh host public keys
+    - name: ssh | Parse host's ssh host public keys
       set_fact:
         ssh_host_keys: >
-          {{  [ dict( ['keytype', 'key', 'host']
+          {{  [ dict( ['keytype', 'key', 'user']
                         | zip(lookup('file', item.path).split(' '))
                     )
               ] + ssh_host_keys }}
       loop: "{{ host_ssh_pubkeys_found.files }}"
     # '
 
+    # FIXME: Use 'ssh_hostname' here, not 'ansible_host'.
     - name: ssh | (server) Add host to backup server's known_hosts
       known_hosts:
         name: "{{ ansible_host }}"

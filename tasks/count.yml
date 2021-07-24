@@ -12,8 +12,6 @@
       register: r_size_cache_stats
 
   delegate_to: localhost
-  tags:
-    - count_files_cache
 
 - block:
     - name: count | Load file count cache
@@ -35,9 +33,6 @@
       debug:
         var: r_size_cache
 
-  tags:
-    - count_files_cache
-
 - block:
     - name: count | (server) Ensure snapshot root directory exists
       file:
@@ -50,9 +45,9 @@
       stat:
         path: "{{ r_snapshot_root + '/' + item }}"
       loop: >-
-        {{  ( ['daily']   | product([0, 1, 2])  | list
-            + ['weekly']  | product([0])        | list
-            + ['monthly'] | product([0])        | list
+        {{  ( ['daily']   | product([0, 1]) | list
+            + ['weekly']  | product([0])    | list
+            + ['monthly'] | product([0])    | list
             ) | map('join', '.') | list
             + ['.sync']
         }}
@@ -81,7 +76,7 @@
     - name: count | (server) Count files in backups
       shell: >-
         {{ 'set -o pipefail; /usr/bin/find '
-              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst | default(item.name) )
+              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst )
                 | quote
               + '| wc -l' }}
       args:
@@ -95,7 +90,7 @@
     - name: count | (server) Count size of backups
       command: >-
         {{  '/usr/bin/du -s -b '
-              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst | default(item.name) )
+              + ( r_snapshot_root + '/' + r_count_interval + '/' + item.dst )
                 | quote
         }}
       register: r_size_raw

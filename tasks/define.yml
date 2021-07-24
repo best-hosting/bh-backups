@@ -11,7 +11,7 @@
                   , 'full_src':
                       ansible_user_id + '@' + host_id + ':'
                       + ( item.src if item.src == '/' else item.src + '/././' )
-                  , 'rsync_filter' : item.rsync_filter | default(item_rsync_filter)
+                  , 'rsync_filter' : item_rsync_filter
                   , 'install' : rsync_filters_dir + '/'
                                   + host_id + '-' + item_name + '.rsync-filter'
                   , 'ssh_host' : host_id
@@ -34,7 +34,7 @@
         _backup_scripts: >-
           {{ _backup_scripts
               + [ { 'name'    : item_name
-                  , 'dst'     : item_name
+                  , 'dst'     : item.dst
                   , 'script'  : item_script
                   , 'install' : rsync_filters_dir + '/'
                                   + host_id + '-' + item_name

@@ -15,7 +15,7 @@
     - name: Determine python version
       set_fact:
         is_python3_used: >-
-          {{ hostvars[item].ansible_python.version.major == 3 }}
+          {{ hostvars[item].ansible_python.version.major | int == 3 }}
       delegate_to: "{{ item }}"
       delegate_facts: true
       loop: >-

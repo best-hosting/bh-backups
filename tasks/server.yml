@@ -7,7 +7,7 @@
         state: directory
       delegate_to: localhost
 
-    - name: server | (server) Generate ssh keypair
+    - name: server | (server) Generate backup server user ssh keypair
       openssh_keypair:
         path: "{{ ansible_user_dir + '/.ssh/id_rsa' }}"
         mode: 0600
@@ -15,7 +15,7 @@
         regenerate: never
         state:  present
 
-    - name: server | (server) Obtain ssh public key
+    - name: server | (server) Obtain backup server user ssh public key
       ansible.builtin.fetch:
         src: "{{ ansible_user_dir + '/.ssh/id_rsa.pub' }}"
         dest: "{{ server_ssh_pubkeys_dir + '/' }}"

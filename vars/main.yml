@@ -120,5 +120,5 @@ r_scripts_size_cache_file: >-
 all_backup_interval_names: []
 
 # Internal backup intervals.
-_backup_intervals: []
+_backup_intervals: [ {'name': '.sync', 'basename': 'sync', 'freq': 0, 'start_offset': 0} ]
 

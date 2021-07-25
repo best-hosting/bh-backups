@@ -96,14 +96,15 @@ ssh_pubkeys_dir: "{{ playbook_dir + '/ssh_pubkeys' }}"
 
 # Description of backup intervals in _ascending_ order (the same as would be
 # in 'rsnapshot.conf').
-# 'base' - base name of backup interval (without numeric suffix).
-# 'number' - number of backups for given interval.
-# 'time' - time in seconds for _one_ particular interval.
+# 'basename' - base name of backup interval (without numeric suffix).
+# 'total' - total number of backups for given interval.
+# 'freq' - time in seconds between _one_ particular interval runs.
+# 'start_offset' - start time offset from _sync_ .
 backup_intervals: >-
   {{
-    [ {'base': 'daily'    , 'number': 7 , 'time': 86400}
-    , {'base': 'weekly'   , 'number': 4 , 'time': 604800}
-    , {'base': 'monthly'  , 'number': 4 , 'time': 18748800}
+    [ {'basename': 'daily'    , 'total': 7 , 'freq': 86400   , 'start_offset': 0}
+    , {'basename': 'weekly'   , 'total': 4 , 'freq': 604800  , 'start_offset': 15}
+    , {'basename': 'monthly'  , 'total': 4 , 'freq': 18748800, 'start_offset': -30}
     ]
   }}
 

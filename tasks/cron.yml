@@ -1,4 +1,25 @@
 
+- name:
+  debug:
+    msg: >-
+      {{ first_interval_basename in item_basenames }}
+  vars:
+    item_offset: >-
+      {{ item | first }}
+    item_intervals: >-
+      {{ item | last }}
+    item_basenames: >-
+      {{ item_intervals | map(attribute='basename') | unique }}
+    first_interval_basename: >-
+      {{ _backup_intervals[0].basename }}
+  loop: >-
+    {{ _backup_intervals | groupby('start_offset') }}
+
+- name:
+  assert:
+    that:
+      - 1 == 2
+
 - block:
     - name: cron | (server) Create cron job for sync and daily
       cron:

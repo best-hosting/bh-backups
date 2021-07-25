@@ -155,29 +155,31 @@
     - name: define | Define backup interval names
       set_fact:
         all_backup_interval_names: >-
-          {{ all_backup_interval_names + [item.base] | product(range(0, item.number))
-          }}
+          {{ all_backup_interval_names + [item.basename] | product(range(0, item.total)) }}
       loop: "{{ backup_intervals }}"
 
     - name: define | Define internal backup intervals list
       set_fact:
         _backup_intervals: >-
           {{ _backup_intervals
-                + [ { 'name'  : item_base + '.' + item_order
-                    , 'base' : item_base
-                    , 'order': item_order
-                    , 'time' : item_ref.time
+                + [ { 'name'     : item_basename + '.' + item_order
+                    , 'basename' : item_basename
+                    , 'order'    : item_order
+                    , 'freq'     : item_ref.freq
+                    , 'start_offset' : item_ref.start_offset
                     }
                   ]
           }}
       vars:
-        item_base: >-
+        item_basename: >-
           {{ item[0] }}
         item_order: >-
           {{ item[1] }}
         item_ref: >-
-          {{ backup_intervals | selectattr('base', 'equalto', item_base) | first
-              | default({'number': 0, 'time': 0}) }}
+          {{ backup_intervals
+              | selectattr('basename', 'equalto', item_basename)
+              | first
+          }}
       loop: "{{ all_backup_interval_names }}"
 
     - name: define | Show backup intervals

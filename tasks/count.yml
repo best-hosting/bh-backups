@@ -48,7 +48,7 @@
       stat:
         path: "{{ r_snapshot_root + '/' + item.name }}"
       loop: >-
-        {{ _backup_intervals + [{'name': '.sync', 'time': 0}] }}
+        {{ _backup_intervals + [{'name': '.sync', 'freq': 0}] }}
       register: r_interval_stats_list
       delegate_to: "{{ backup_server }}"
 
@@ -78,7 +78,7 @@
     - name: count | Calculate backups overall time
       set_fact:
         backups_overall_time: >-
-          {{ existing_intervals | map(attribute='time') | sum }}
+          {{ existing_intervals | map(attribute='freq') | sum }}
       vars:
         existing_intervals: >-
           {{ r_interval_stats_list.results

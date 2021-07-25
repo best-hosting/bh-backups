@@ -41,9 +41,6 @@
         state: directory
       delegate_to: "{{ backup_server }}"
 
-    # FIXME: Should i count files over '.sync' ? '.sync' may be incomplete and
-    # counts will be wrong. Or may be i should use '.sync', when no other
-    # backup interval found?
     # FIXME: Parametrize over interval names. Then, check all intervals here.
     # I should use the oldes (the most recent) interval to calculate counts
     # and the earliest (the most old) to calculate 'NAGIOS_FIRSTRUN'.
@@ -55,47 +52,39 @@
       register: r_interval_stats_list
       delegate_to: "{{ backup_server }}"
 
-        #- name: count | Rebuild to dict
-        #  set_fact:
-        #    r_interval_stats: >-
-        #      {{ r_interval_stats_list.results | items2dict(key_name='item.name', value_name='stat') }}
-
-    - name:
-      debug:
-        msg: >-
-          {{ (completed_intervals + incomplete_intervals) | first | default([])
+    - name: count | Determine count interval
+      set_fact:
+        r_count_interval: >-
+          {{ ( completed_intervals + incomplete_intervals )
+                | first | default([])
           }}
       vars:
         existing_intervals: >-
           {{ r_interval_stats_list.results
-               | selectattr('stat.exists', 'equalto', true)
-               | map(attribute='item')
-               | list
+                | selectattr('stat.exists', 'equalto', true)
+                | map(attribute='item')
+                | list
           }}
         completed_intervals: >-
           {{ existing_intervals
-               | rejectattr('name', 'equalto', _backup_intervals[0].name)
-               | rejectattr('name', 'equalto', '.sync')
-               | list }}
+                | rejectattr('name', 'equalto', _backup_intervals[0].name)
+                | rejectattr('name', 'equalto', '.sync')
+                | list }}
+        # Possible incomplete intervals are '.sync' and 'daily.0' (or
+        # similar).
         incomplete_intervals: >-
           {{ existing_intervals | difference(completed_intervals) }}
-        time: >-
-          {{ existing_intervals
-               | map(attribute='time')
-               | list }}
 
-    - name:
-      assert:
-        that:
-          - 1 == 2
-
-    - name: count | Determine count interval
+    - name: count | Calculate backups overall time
       set_fact:
-        r_count_interval: >-
-          {{ 'daily.1' if r_interval_stats['daily.1'].exists
-                else 'daily.0' if r_interval_stats['daily.0'].exists
-                else '.sync' if r_interval_stats['.sync'].exists
-                else ''
+        backups_overall_time: >-
+          {{ existing_intervals | map(attribute='time') | sum }}
+      vars:
+        existing_intervals: >-
+          {{ r_interval_stats_list.results
+                | selectattr('stat.exists', 'equalto', true)
+                | map(attribute='item')
+                | list
           }}
 
   when: r_count_files

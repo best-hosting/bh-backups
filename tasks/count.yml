@@ -41,26 +41,53 @@
         state: directory
       delegate_to: "{{ backup_server }}"
 
+    # FIXME: Should i count files over '.sync' ? '.sync' may be incomplete and
+    # counts will be wrong. Or may be i should use '.sync', when no other
+    # backup interval found?
     # FIXME: Parametrize over interval names. Then, check all intervals here.
     # I should use the oldes (the most recent) interval to calculate counts
     # and the earliest (the most old) to calculate 'NAGIOS_FIRSTRUN'.
-    - name: count | (server) Stat backup points
+    - name: count | (server) Stat backup intervals
       stat:
-        path: "{{ r_snapshot_root + '/' + item }}"
+        path: "{{ r_snapshot_root + '/' + item.name }}"
       loop: >-
-        {{  ( ['daily']   | product([0, 1]) | list
-            + ['weekly']  | product([0])    | list
-            + ['monthly'] | product([0])    | list
-            ) | map('join', '.') | list
-            + ['.sync']
-        }}
+        {{ _backup_intervals + [{'name': '.sync', 'time': 0}] }}
       register: r_interval_stats_list
       delegate_to: "{{ backup_server }}"
 
-    - name: count | Rebuild to dict
-      set_fact:
-        r_interval_stats: >-
-          {{ r_interval_stats_list.results | items2dict(key_name='item', value_name='stat') }}
+        #- name: count | Rebuild to dict
+        #  set_fact:
+        #    r_interval_stats: >-
+        #      {{ r_interval_stats_list.results | items2dict(key_name='item.name', value_name='stat') }}
+
+    - name:
+      debug:
+        msg: >-
+          {{ (completed_intervals + incomplete_intervals) | first | default([])
+          }}
+      vars:
+        existing_intervals: >-
+          {{ r_interval_stats_list.results
+               | selectattr('stat.exists', 'equalto', true)
+               | map(attribute='item')
+               | list
+          }}
+        completed_intervals: >-
+          {{ existing_intervals
+               | rejectattr('name', 'equalto', _backup_intervals[0].name)
+               | rejectattr('name', 'equalto', '.sync')
+               | list }}
+        incomplete_intervals: >-
+          {{ existing_intervals | difference(completed_intervals) }}
+        time: >-
+          {{ existing_intervals
+               | map(attribute='time')
+               | list }}
+
+    - name:
+      assert:
+        that:
+          - 1 == 2
 
     - name: count | Determine count interval
       set_fact:

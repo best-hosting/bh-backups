@@ -113,3 +113,12 @@ r_scripts_files_count_cache_file: >-
 r_scripts_size_cache_file: >-
   {{ r_cache_dir + '/' + host_id + '-scripts-size.yml' }}
 
+# List of lists containing fully named backup intervals from
+# 'backup_intervals'. Each list element contains list with _exactly_ two
+# elements: first is backup interval name as found in 'backup_intervals' and
+# second is number suffix.
+all_backup_interval_names: []
+
+# Internal backup intervals.
+_backup_intervals: []
+

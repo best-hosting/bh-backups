@@ -93,3 +93,17 @@ run_mode: 'install'
 
 # Local directory to store ssh public keys.
 ssh_pubkeys_dir: "{{ playbook_dir + '/ssh_pubkeys' }}"
+
+# Description of backup intervals in _ascending_ order (the same as would be
+# in 'rsnapshot.conf').
+# 'base' - base name of backup interval (without numeric suffix).
+# 'number' - number of backups for given interval.
+# 'time' - time in seconds for _one_ particular interval.
+backup_intervals: >-
+  {{
+    [ {'base': 'daily'    , 'number': 7 , 'time': 86400}
+    , {'base': 'weekly'   , 'number': 4 , 'time': 604800}
+    , {'base': 'monthly'  , 'number': 4 , 'time': 18748800}
+    ]
+  }}
+
